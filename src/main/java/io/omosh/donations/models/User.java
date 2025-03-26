@@ -15,10 +15,12 @@ public class User {
     private Long id;
 
     private String username;
+    private String fullname;
     private String email;
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
 }
