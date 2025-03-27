@@ -42,6 +42,9 @@ public class UserService {
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
+        user.setFullname(userDTO.getFullname());
+        user.setStatus(userDTO.getStatus());
+        user.setRoles(userDTO.getRoles());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword())); // Encrypt password
         user.setEmail(userDTO.getEmail());
 
@@ -52,6 +55,8 @@ public class UserService {
         return userRepository.findById(id).map(user -> {
             user.setFullname(updatedUser.getFullname());
             user.setEmail(updatedUser.getEmail());
+            user.setStatus(updatedUser.getStatus());
+            user.setRoles(updatedUser.getRoles());
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }

@@ -16,7 +16,11 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         http.csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("/api/users/**", "/actuator/**").permitAll()
+                        .pathMatchers("/api/users/**",
+                                "/api/donations/**",
+                                "/api/beneficiaries/**",
+                                "/actuator/**")
+                        .permitAll()
                         .anyExchange().authenticated()
                 );
 

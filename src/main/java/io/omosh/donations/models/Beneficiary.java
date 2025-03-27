@@ -16,4 +16,6 @@ public class Beneficiary {
     private String name;
     private String contactInfo;
     private String needs;
+    private String amount;
+
 }

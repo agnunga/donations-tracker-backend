@@ -4,6 +4,7 @@ import io.omosh.donations.repositories.DonationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DonationService {
@@ -27,5 +28,15 @@ public class DonationService {
 
     public void deleteDonation(Long id) {
         donationRepository.deleteById(id);
+    }
+
+    public Optional<Donation> getDonationsById(Long id) {
+        return donationRepository.findById(id);
+    }
+
+    public Donation updateDonation(Long id, Donation updatedDonation) {
+        return donationRepository
+                .findById(id).map(donationRepository::save)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
