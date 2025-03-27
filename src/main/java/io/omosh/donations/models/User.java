@@ -18,6 +18,7 @@ public class User {
     private String fullname;
     private String email;
     private String password;
+    private Status status;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

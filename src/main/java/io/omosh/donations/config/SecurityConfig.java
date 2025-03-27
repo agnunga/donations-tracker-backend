@@ -1,4 +1,4 @@
-package io.omosh.donations;
+package io.omosh.donations.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
