@@ -1,4 +1,4 @@
-package io.omosh.donations;
+package io.omosh.dts;
 
 public class DriverTest {
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
-package io.omosh.donations.repositories;
+package io.omosh.dts.repositories;
 
-import io.omosh.donations.models.Donation;
+import io.omosh.dts.models.Donation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

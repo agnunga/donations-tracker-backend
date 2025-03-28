@@ -1,7 +1,10 @@
-package io.omosh.donations.models;
+package io.omosh.dts.models;
 
+import io.omosh.dts.models.enums.Role;
+import io.omosh.dts.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.Set;
 
 @Entity

@@ -1,6 +1,6 @@
-package io.omosh.donations.repositories;
+package io.omosh.dts.repositories;
 
-import io.omosh.donations.models.Beneficiary;
+import io.omosh.dts.models.Beneficiary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BeneficiaryRepository extends JpaRepository<Beneficiary, Long> {

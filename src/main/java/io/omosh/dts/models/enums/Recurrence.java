@@ -1,4 +1,4 @@
-package io.omosh.donations.models;
+package io.omosh.dts.models.enums;
 
 public enum Recurrence {
     MONTHLY, QUARTERLY, SEMI_ANNUALLY, ANNUALLY;

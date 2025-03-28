@@ -1,6 +1,6 @@
-package io.omosh.donations.services;
-import io.omosh.donations.models.Donation;
-import io.omosh.donations.repositories.DonationRepository;
+package io.omosh.dts.services;
+import io.omosh.dts.models.Donation;
+import io.omosh.dts.repositories.DonationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,8 +35,13 @@ public class DonationService {
     }
 
     public Donation updateDonation(Long id, Donation updatedDonation) {
-        return donationRepository
-                .findById(id).map(donationRepository::save)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return donationRepository.findById(id)
+                .map(existingDonation -> {
+                    existingDonation.setAmount(updatedDonation.getAmount()); // Example field update
+                    existingDonation.setDonorName(updatedDonation.getDonorName());
+                    return donationRepository.save(existingDonation); // ✅ Now saving the updated record
+                })
+                .orElseThrow(() -> new RuntimeException("Donation not found"));
     }
+
 }

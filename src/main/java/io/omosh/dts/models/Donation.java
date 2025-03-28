@@ -1,4 +1,4 @@
-package io.omosh.donations.models;
+package io.omosh.dts.models;
 
 import jakarta.persistence.*;
 import lombok.*;

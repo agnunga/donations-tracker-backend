@@ -1,7 +1,7 @@
-package io.omosh.donations.controllers;
+package io.omosh.dts.controllers;
 
-import io.omosh.donations.models.Donation;
-import io.omosh.donations.services.DonationService;
+import io.omosh.dts.models.Donation;
+import io.omosh.dts.services.DonationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

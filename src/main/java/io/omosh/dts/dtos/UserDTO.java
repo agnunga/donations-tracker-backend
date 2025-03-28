@@ -1,6 +1,6 @@
-package io.omosh.donations.dtos;
-import io.omosh.donations.models.Role;
-import io.omosh.donations.models.Status;
+package io.omosh.dts.dtos;
+import io.omosh.dts.models.enums.Role;
+import io.omosh.dts.models.enums.Status;
 import lombok.Data;
 
 import java.util.Set;

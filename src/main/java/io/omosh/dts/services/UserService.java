@@ -1,7 +1,7 @@
-package io.omosh.donations.services;
-import io.omosh.donations.dtos.UserDTO;
-import io.omosh.donations.models.User;
-import io.omosh.donations.repositories.UserRepository;
+package io.omosh.dts.services;
+import io.omosh.dts.dtos.UserDTO;
+import io.omosh.dts.models.User;
+import io.omosh.dts.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
