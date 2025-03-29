@@ -13,6 +13,6 @@ public class UserDTO {
     private String password;
     private String email;
     private Status status;
-    private Set<Role> roles;
+    private Role role;
 
 }

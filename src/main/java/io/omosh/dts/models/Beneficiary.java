@@ -1,5 +1,4 @@
 package io.omosh.dts.models;
-
 import jakarta.persistence.*;
 import lombok.*;
 
