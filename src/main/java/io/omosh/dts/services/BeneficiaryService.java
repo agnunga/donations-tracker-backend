@@ -34,7 +34,7 @@ public class BeneficiaryService {
     public Beneficiary updateBeneficiary(Long id, Beneficiary updatedBeneficiary) {
         return beneficiaryRepository.findById(id)
                 .map(existingDonation -> {
-                    existingDonation.setAmount(updatedBeneficiary.getAmount()); // Example field update
+                    existingDonation.setTotalAmount(updatedBeneficiary.getTotalAmount()); // Example field update
                     existingDonation.setName(updatedBeneficiary.getName());
                     return beneficiaryRepository.save(existingDonation); // ✅ Now saving the updated record
                 })
