@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String token = extractToken(exchange);
-        logger.info("JwtAuthenticationFilter triggered");
+        logger.info("JwtAuthenticationFilter triggered token ::: {}", token);
 
         if (token != null) {
             Optional<String> usernameOpt = JwtUtil.extractUsername(token);
@@ -75,6 +75,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private String extractToken(ServerWebExchange exchange) {
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        logger.info("extractToken ::: {}", authHeader );
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }

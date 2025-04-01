@@ -3,6 +3,7 @@ package io.omosh.dts.config;
 import io.omosh.dts.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,12 +30,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) {
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Disable CSRF protection
                 .securityContextRepository(securityContextRepository()) // Ensures SecurityContext persistence
                 .authorizeExchange(auth -> auth
                         .pathMatchers("/auth/login/**",
                                 "/api/donations/**", "/api/beneficiaries/**",
                                 "/actuator/**").permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll() // Allow preflight requests
                         .pathMatchers("/api/users/**").authenticated()
                         .anyExchange().authenticated()
                 )
@@ -42,7 +45,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
