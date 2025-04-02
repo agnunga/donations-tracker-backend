@@ -58,7 +58,7 @@ public class UserService {
             user.setStatus(updatedUser.getStatus());
             user.setRole(updatedUser.getRole());
             return userRepository.save(user);
-        }).orElseThrow(() -> new RuntimeException("User not found"));
+        }).orElseThrow(() -> new RuntimeException("Update failed. User not found"));
     }
 
 }

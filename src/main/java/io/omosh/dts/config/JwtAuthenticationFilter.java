@@ -64,6 +64,8 @@ public class JwtAuthenticationFilter implements WebFilter {
                     logger.info("SecurityContext Authentication: {}", SecurityContextHolder.getContext().getAuthentication());
                     return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)));
 
+                }else{
+                    logger.error("User not authenticated: Toked expired");
                 }
             }
         }else {

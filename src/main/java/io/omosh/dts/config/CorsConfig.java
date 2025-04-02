@@ -15,11 +15,11 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         // Specify allowed origins
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://yourdomain.com"));
+        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://donations-tracker-three.vercel.app"));
         // Specify allowed HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Specify allowed headers
-        corsConfig.setAllowedHeaders(Arrays.asList("Cache-Control", "Authorization", "Content-Type", "Accept"));
+        corsConfig.setAllowedHeaders(Arrays.asList("Cache-Control", "Authorization", "Content-Type", "Accept", "ngrok-skip-browser-warning"));
         // Specify exposed headers
         corsConfig.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         // Allow credentials
