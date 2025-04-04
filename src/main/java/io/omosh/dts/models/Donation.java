@@ -17,9 +17,16 @@ public class Donation {
 
     private BigDecimal amount;
     private String donorName;
+    private String details;
+    private boolean received;
     private LocalDateTime donationDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "campaign_id")
+    private Campaign campaign;
+
 }

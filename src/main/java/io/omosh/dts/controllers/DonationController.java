@@ -1,5 +1,6 @@
 package io.omosh.dts.controllers;
 
+import io.omosh.dts.dtos.DonationsStatsDTO;
 import io.omosh.dts.models.Donation;
 import io.omosh.dts.services.DonationService;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,24 @@ public class DonationController {
     public ResponseEntity<Void> deleteDonation(@PathVariable Long id) {
         donationService.deleteDonation(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> countDonations() {
+        long count = donationService.countDonations();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/sum")
+    public ResponseEntity<Double> sumDonations() {
+        double sum = donationService.sumDonations();
+        return ResponseEntity.ok(sum);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<DonationsStatsDTO> getDonationsStats() {
+        DonationsStatsDTO stats = donationService.getDonationsStats();
+        return ResponseEntity.ok(stats);
     }
 
 }

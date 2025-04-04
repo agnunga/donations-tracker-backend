@@ -35,7 +35,9 @@ public class SecurityConfig {
                 .securityContextRepository(securityContextRepository()) // Ensures SecurityContext persistence
                 .authorizeExchange(auth -> auth
                         .pathMatchers("/auth/login/**",
-                                "/api/donations/**", "/api/beneficiaries/**",
+                                "/api/donations/**",
+                                "/api/campaigns/**",
+                                "/api/beneficiaries/**",
                                 "/actuator/**").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS).permitAll() // Allow preflight requests
                         .pathMatchers("/api/users/**").authenticated()

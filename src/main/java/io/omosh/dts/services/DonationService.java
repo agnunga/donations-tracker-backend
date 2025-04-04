@@ -1,4 +1,5 @@
 package io.omosh.dts.services;
+import io.omosh.dts.dtos.DonationsStatsDTO;
 import io.omosh.dts.models.Donation;
 import io.omosh.dts.repositories.DonationRepository;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,10 @@ public class DonationService {
         return donationRepository.findById(id);
     }
 
+    public long getDonationsCount() {
+        return donationRepository.count();
+    }
+
     public Donation updateDonation(Long id, Donation updatedDonation) {
         return donationRepository.findById(id)
                 .map(existingDonation -> {
@@ -42,6 +47,19 @@ public class DonationService {
                     return donationRepository.save(existingDonation); // ✅ Now saving the updated record
                 })
                 .orElseThrow(() -> new RuntimeException("Donation not found"));
+    }
+
+    public long countDonations() {
+        return donationRepository.count();
+    }
+
+    public double sumDonations() {
+        return donationRepository.sum();
+    }
+
+    public DonationsStatsDTO getDonationsStats() {
+        //return donationRepository.donationsStats();
+        return new DonationsStatsDTO(donationRepository.count(), donationRepository.sum());
     }
 
 }
