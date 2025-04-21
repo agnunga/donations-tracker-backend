@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: donations
+  docker:
+    compose:
+      enabled: false
+  # MySQL Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/donations?useSSL=false&serverTimezone=UTC
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Hibernate (JPA) Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate.ddl-auto: update
+    show-sql: true
+
+server:
+  port: 9090
+  error:
+    include-message: always
+    include-binding-errors: always
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: "*"
+    mappings:
+      enabled: true
+
+daraja:
+  configs:
+    consumer-key: ${DARAJA_CONSUMER_KEY}
+    consumer-secret: ${DARAJA_CONSUMER_SECRET}
+    auth-url: https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
+    b2c-url: https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest

@@ -1,8 +1,15 @@
 package io.omosh.dts.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.omosh.dts.dtos.daraja.AcknowledgeResponse;
+import io.omosh.dts.dtos.daraja.B2CResponse;
 import io.omosh.dts.dtos.DonationsStatsDTO;
 import io.omosh.dts.models.Donation;
 import io.omosh.dts.services.DonationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +22,7 @@ public class DonationController {
 
     private final DonationService donationService;
     private List<Donation> donations;
+    private final Logger logger = LoggerFactory.getLogger(DonationController.class);
 
     public DonationController(DonationService donationService) {
         this.donationService = donationService;
@@ -23,6 +31,28 @@ public class DonationController {
     @PostMapping
     public ResponseEntity<Donation> createDonation(@RequestBody Donation donationDTO) {
         return ResponseEntity.ok(donationService.saveDonation(donationDTO));
+    }
+
+    @PostMapping(value = "/payment", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2CResponse serviceResponse) throws JsonProcessingException {
+        System.out.println("Entering paymentResult method");
+        ObjectMapper objectMapper = new ObjectMapper();
+        logger.info("payment res paymentResult: {}", objectMapper.writeValueAsString(serviceResponse));
+
+
+
+        String json = null;
+        try {
+            String jsonString = objectMapper.writeValueAsString(serviceResponse);
+            System.out.println("Request Body: " + jsonString);
+            json = objectMapper.writeValueAsString(serviceResponse);
+            //ServiceResponse obj = objectMapper.readValue(json, ServiceResponse.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        logger.info("createDonation paymentResult: {}", json);
+
+        return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @GetMapping

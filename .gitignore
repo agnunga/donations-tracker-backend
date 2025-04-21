@@ -1,3 +1,25 @@
+#Ignire certs -  Generic certificate files
+*.crt
+*.cer
+*.pem
+*.pfx
+*.p12
+*.key
+*.jks
+*.keystore
+
+# Directory where certificates might be stored
+certs/
+ssl/
+security/
+
+# Specific certificate files (if you know their names)
+my-app.crt
+internal-api.key
+production.p12
+
+
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar

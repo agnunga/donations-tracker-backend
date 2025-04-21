@@ -1,4 +1,4 @@
-package io.omosh.dts.config;
+package io.omosh.dts.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

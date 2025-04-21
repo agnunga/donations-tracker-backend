@@ -1,5 +1,5 @@
 package io.omosh.dts.services;
-import io.omosh.dts.config.JwtUtil;
+import io.omosh.dts.utils.JwtUtil;
 import io.omosh.dts.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

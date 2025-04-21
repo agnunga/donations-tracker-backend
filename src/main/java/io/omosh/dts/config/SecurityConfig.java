@@ -38,7 +38,9 @@ public class SecurityConfig {
                                 "/api/donations/**",
                                 "/api/campaigns/**",
                                 "/api/beneficiaries/**",
-                                "/actuator/**").permitAll()
+                                "/momo/**",
+                                "/actuator/**")
+                        .permitAll()
                         .pathMatchers(HttpMethod.OPTIONS).permitAll() // Allow preflight requests
                         .pathMatchers("/api/users/**").authenticated()
                         .anyExchange().authenticated()

@@ -2,6 +2,7 @@ package io.omosh.dts.config;
 
 import io.omosh.dts.models.User;
 import io.omosh.dts.repositories.UserRepository;
+import io.omosh.dts.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
