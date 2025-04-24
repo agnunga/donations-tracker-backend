@@ -24,6 +24,7 @@ public class DarajaConfig {
     private String c2bShortCode;
     private String c2bConfirmationUrl;
     private String c2bValidationUrl;
+    private String c2bSimulateUrl;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -114,10 +115,10 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     @Override
     public Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister) {
-//        c2bRegister.setConfirmationURL(darajaConfig.getFullB2cConfirmationUrl());
-//        c2bRegister.setValidationURL(darajaConfig.getFullB2cValidationUrl());
-//        c2bRegister.setResponseType("Completed");
-//        c2bRegister.setShortCode(darajaConfig.getC2bShortCode());
+        c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
+        c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
+        c2bRegister.setResponseType("Completed");
+        c2bRegister.setShortCode(darajaConfig.getC2bShortCode());
 
         logger.info("c2bRegister ::: {}", HelperUtil.toJson(c2bRegister));
         return getValidAccessToken()
@@ -134,6 +135,50 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                 );
     }
 
+    @Override
+    public Mono<SyncResponse> c2bSimulate() {
+        String simulationUrl = darajaConfig.getC2bSimulateUrl();
+        C2bSumulate c2bSumulate = new C2bSumulate();
+        c2bSumulate.setCommandID("CustomerPayBillOnline");
+        c2bSumulate.setMsisdn("254708374149");
+        c2bSumulate.setAmount("10");
+        c2bSumulate.setBillRefNumber("paying");
+        c2bSumulate.setShortCode(darajaConfig.getC2bShortCode());
+
+        logger.info("c2bSimulate :::: {}", c2bSumulate);
+        logger.info("simulationUrl :::: {}", simulationUrl);
+
+        return getValidAccessToken()
+                .flatMap(token ->
+                        webClient.post()
+                                .uri(simulationUrl)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .bodyValue(c2bSumulate)
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, clientResponse -> {
+                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
+                                        logger.error("C2B Simulation Error Response: {}", errorBody);
+                                        return Mono.error(new RuntimeException("C2B Simulation failed with status: " + clientResponse.statusCode()));
+                                    });
+                                })
+                                .bodyToMono(SyncResponse.class)
+                                .doOnNext(response -> logger.info("C2B Simulation Success Response: {}", response))
+                                .doOnError(error -> logger.error("C2B Simulation Exception: {}", error.getMessage(), error))
+                );
+    }
+
+    @Override
+    public boolean c2bConfirmation(C2bConfirmation c2bConfirmation) {
+        logger.info("c2bConfirmation::save payment to DB: {}", c2bConfirmation);
+        return true;
+    }
+
+    @Override
+    public boolean c2bValidation(C2bConfirmation c2bValidation) {
+        logger.info("c2bValidation::save payment to DB: {}", c2bValidation);
+        return true;
+    }
 
     public void printConfig() {
         System.out.println("consumer-key: " + darajaConfig.getConsumerKey());
@@ -151,6 +196,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         System.out.println("c2b-register-url: " + darajaConfig.getC2bRegisterUrl());
         System.out.println("c2b-confirmation-url: " + darajaConfig.getFullC2bConfirmationUrl());
         System.out.println("c2b-validation-url: " + darajaConfig.getFullC2bValidationUrl());
+        System.out.println("c2b-simulation-url: " + darajaConfig.getC2bSimulateUrl());
     }
 
 }

@@ -55,16 +55,25 @@ public class DarajaController {
     }
 
     @PostMapping(value = "/c2b-confirmation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bConfirmation(@RequestBody Object object) {
-        logger.info("Just in c2bConfirmation :::: {}", HelperUtil.toJson(object));
-
+    public ResponseEntity<AcknowledgeResponse> c2bConfirmation(@RequestBody C2bConfirmation c2bConfirmation) {
+        logger.info("Just in c2bConfirmation :::: {}", HelperUtil.toJson(c2bConfirmation));
+        boolean success = service.c2bConfirmation(c2bConfirmation);
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/c2b-validation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bValidation(@RequestBody Object object) {
-        logger.info("Just in c2bValidation :::: {}", HelperUtil.toJson(object));
+    public ResponseEntity<AcknowledgeResponse> c2bValidation(@RequestBody C2bConfirmation c2bValidation) {
+        logger.info("Just in c2bValidation :::: {}", HelperUtil.toJson(c2bValidation));
+        boolean success = service.c2bValidation(c2bValidation);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("success"));
+        return ResponseEntity.ok(new AcknowledgeResponse("fail"));
+    }
 
+    @PostMapping(value = "/c2b-simulate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> c2bSimulate(@RequestBody Object object) {
+        logger.info("Just in c2bSimulate :::: {}", HelperUtil.toJson(object));
+        service.c2bSimulate().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 

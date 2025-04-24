@@ -14,6 +14,12 @@ public interface DarajaApiService {
 
     Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister);
 
+    Mono<SyncResponse> c2bSimulate();
+
+    boolean c2bConfirmation(C2bConfirmation c2bConfirmation);
+
+    boolean c2bValidation(C2bConfirmation c2bValidation);
+
 
     /*Customer To Business (C2B)*/
     /*

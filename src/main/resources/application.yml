@@ -45,7 +45,8 @@ daraja:
     b2c-initiate-url: /momo/b2c-initiate
     b2c-callback-url: /momo/b2c-callback
     b2c-result-url: /momo/b2c-result
-    c2b-short-code: 107031
+    c2b-short-code: 600983
     c2b-register-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
     c2b-confirmation-url: /momo/c2b-confirmation
     c2b-validation-url: /momo/c2b-validation
+    c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
