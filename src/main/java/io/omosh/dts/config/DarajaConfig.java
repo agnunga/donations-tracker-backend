@@ -21,10 +21,15 @@ public class DarajaConfig {
     private String b2cCallbackUrl;
     private String b2cResultUrl;
     private String c2bRegisterUrl;
+    private String c2bRegisterCallUrl;
     private String c2bShortCode;
     private String c2bConfirmationUrl;
     private String c2bValidationUrl;
     private String c2bSimulateUrl;
+    private String queryTransactionUrl;
+    private String queryTransactionCallUrl;
+    private String queryTransactionQueueTimeoutUrl;
+    private String queryTransactionResult;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();
@@ -44,6 +49,22 @@ public class DarajaConfig {
 
     public String getFullC2bValidationUrl() {
         return getBaseUrl() + getC2bValidationUrl();
+    }
+
+    public String getFullC2bRegisterCallUrl() {
+        return getBaseUrl() + getC2bRegisterCallUrl();
+    }
+
+    public String getFullQueryTransactionCallUrl() {
+        return getBaseUrl() + getQueryTransactionCallUrl();
+    }
+
+    public String getFullQueryTransactionQueueTimeoutUrl() {
+        return getBaseUrl() + getQueryTransactionQueueTimeoutUrl();
+    }
+
+    public String getFullQueryTransactionResult() {
+        return getBaseUrl() + getQueryTransactionResult();
     }
 
 }

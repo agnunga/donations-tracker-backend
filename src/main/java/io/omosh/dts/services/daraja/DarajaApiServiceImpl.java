@@ -114,7 +114,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister) {
+    public Mono<SyncResponse> c2bRegisterUrl() {
+        C2bRegister c2bRegister = new C2bRegister();
         c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
         c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
         c2bRegister.setResponseType("Completed");
@@ -180,6 +181,57 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return true;
     }
 
+    @Override
+    public Mono<SyncResponse> queryTransaction() {
+        String securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
+        String url = darajaConfig.getQueryTransactionUrl();
+        TransactionStatusRequest txnStatusRequest = new TransactionStatusRequest();
+        txnStatusRequest.setInitiator(HelperUtil.generate());
+        txnStatusRequest.setSecurityCredential(securityCredential);
+        txnStatusRequest.setCommandID("TransactionStatusQuery");
+        txnStatusRequest.setTransactionID("OEI2AK4Q16");
+        txnStatusRequest.setOriginatorConversationID("AG_20250425_20101f0bf59d8c36456a");
+        txnStatusRequest.setPartyA("600995");
+        txnStatusRequest.setIdentifierType("1");
+        txnStatusRequest.setResultURL(darajaConfig.getFullQueryTransactionResult());
+        txnStatusRequest.setQueueTimeOutURL(darajaConfig.getFullQueryTransactionQueueTimeoutUrl());
+        txnStatusRequest.setRemarks(null);
+        txnStatusRequest.setOccasion(null);
+        logger.info("queryTransaction -> txnStatusRequest :::: {}", txnStatusRequest);
+
+        return getValidAccessToken()
+                .flatMap(token ->
+                        webClient.post()
+                                .uri(url)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .bodyValue(txnStatusRequest)
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, clientResponse -> {
+                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
+                                        logger.error("Query txn Error Response: {}", errorBody);
+                                        return Mono.error(new RuntimeException("Query txn failed with status: " + clientResponse.statusCode()));
+                                    });
+                                })
+                                .bodyToMono(SyncResponse.class)
+                                .doOnNext(response -> logger.info("query txn Success Response: {}", response))
+                                .doOnError(error -> logger.error("C2B Simulation Exception: {}", error.getMessage(), error))
+                );
+
+    }
+
+    @Override
+    public boolean queryTransactionQueueTimeout(TransactionStatusResponse statusResponse) {
+        logger.info("Service queryTransactionQueueTimeout - TransactionStatusResponse statusResponse ::: {}", statusResponse);
+        return false;
+    }
+
+    @Override
+    public boolean queryTransactionResult(TransactionStatusResponse statusResponse) {
+        logger.info("Service queryTransactionResult - TransactionStatusResponse statusResponse ::: {}", statusResponse);
+        return false;
+    }
+
     public void printConfig() {
         System.out.println("consumer-key: " + darajaConfig.getConsumerKey());
         System.out.println("consumer-secret: " + darajaConfig.getConsumerSecret());
@@ -194,6 +246,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         System.out.println("b2c-initiator-password: " + darajaConfig.getB2cInitiatorPassword());
         System.out.println("c2b-short-code: " + darajaConfig.getC2bShortCode());
         System.out.println("c2b-register-url: " + darajaConfig.getC2bRegisterUrl());
+        System.out.println("c2b-register-call-url: " + darajaConfig.getFullC2bRegisterCallUrl());
         System.out.println("c2b-confirmation-url: " + darajaConfig.getFullC2bConfirmationUrl());
         System.out.println("c2b-validation-url: " + darajaConfig.getFullC2bValidationUrl());
         System.out.println("c2b-simulation-url: " + darajaConfig.getC2bSimulateUrl());

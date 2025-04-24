@@ -22,7 +22,7 @@ public class Result{
 	private int resultType;
 
 	@JsonProperty("ResultCode")
-	private int resultCode;
+	private String resultCode;
 
 	@JsonProperty("ResultParameters")
 	private ResultParameters resultParameters;

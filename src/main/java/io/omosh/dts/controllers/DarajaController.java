@@ -47,34 +47,61 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
-    @PostMapping(value = "/c2b-register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bRegisterUrl(@RequestBody C2bRegister c2bRegister) {
-        logger.info("Just in c2bRegisterUrl :::: {}", HelperUtil.toJson(c2bRegister));
-        service.c2bRegisterUrl(c2bRegister).subscribe();
+    @PostMapping(value = "/c2b-register-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> c2bRegisterUrl() {
+        logger.info("Just in c2bRegisterUrl ::::");
+        service.c2bRegisterUrl().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/c2b-confirmation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bConfirmation(@RequestBody C2bConfirmation c2bConfirmation) {
+    public ResponseEntity<C2bValidationResponse> c2bConfirmation(@RequestBody C2bConfirmation c2bConfirmation) {
         logger.info("Just in c2bConfirmation :::: {}", HelperUtil.toJson(c2bConfirmation));
         boolean success = service.c2bConfirmation(c2bConfirmation);
-        return ResponseEntity.ok(new AcknowledgeResponse("success"));
+        if (success)
+            return ResponseEntity.ok(new C2bValidationResponse("0", "Accepted"));
+        return ResponseEntity.ok(new C2bValidationResponse("C2B00011", "Rejected"));
     }
 
     @PostMapping(value = "/c2b-validation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bValidation(@RequestBody C2bConfirmation c2bValidation) {
+    public ResponseEntity<C2bValidationResponse> c2bValidation(@RequestBody C2bConfirmation c2bValidation) {
         logger.info("Just in c2bValidation :::: {}", HelperUtil.toJson(c2bValidation));
         boolean success = service.c2bValidation(c2bValidation);
         if (success)
-            return ResponseEntity.ok(new AcknowledgeResponse("success"));
-        return ResponseEntity.ok(new AcknowledgeResponse("fail"));
+            return ResponseEntity.ok(new C2bValidationResponse("0", "Accepted"));
+        return ResponseEntity.ok(new C2bValidationResponse("C2B00011", "Rejected"));
     }
 
-    @PostMapping(value = "/c2b-simulate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> c2bSimulate(@RequestBody Object object) {
-        logger.info("Just in c2bSimulate :::: {}", HelperUtil.toJson(object));
+    @PostMapping(value = "/c2b-simulate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> c2bSimulate() {
+        logger.info("Just in c2bSimulate :::: ");
         service.c2bSimulate().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
+    }
+
+    @PostMapping(value = "/query-transaction-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryTransaction() {
+        logger.info("Just in c2bValidation :::: ");
+        service.queryTransaction().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
+
+    @PostMapping(value = "/query-transaction-queue-timeout", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryTransactionQueueTimeout(@RequestBody TransactionStatusResponse statusResponse) {
+        logger.info("Just in queryTransactionQueueTimeout :::: {}", HelperUtil.toJson(statusResponse));
+        boolean success = service.queryTransactionQueueTimeout(statusResponse);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/query-transaction-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryTransactionResult(@RequestBody TransactionStatusResponse statusResponse) {
+        logger.info("Just in queryTransactionResult :::: {}", HelperUtil.toJson(statusResponse));
+        boolean success = service.queryTransactionResult(statusResponse);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
     }
 
 }

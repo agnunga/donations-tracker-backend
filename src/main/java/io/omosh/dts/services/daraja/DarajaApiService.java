@@ -12,13 +12,19 @@ public interface DarajaApiService {
 
     Mono<SyncResponse> performB2CTransaction(B2CRequestExternal b2CRequestExternal);
 
-    Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister);
+    Mono<SyncResponse> c2bRegisterUrl();
 
     Mono<SyncResponse> c2bSimulate();
 
     boolean c2bConfirmation(C2bConfirmation c2bConfirmation);
 
     boolean c2bValidation(C2bConfirmation c2bValidation);
+
+    Mono<SyncResponse> queryTransaction();
+
+    boolean queryTransactionQueueTimeout(TransactionStatusResponse statusResponse);
+
+    boolean queryTransactionResult(TransactionStatusResponse statusResponse);
 
 
     /*Customer To Business (C2B)*/
