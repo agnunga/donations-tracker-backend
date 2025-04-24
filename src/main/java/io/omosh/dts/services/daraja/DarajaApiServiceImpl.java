@@ -1,13 +1,9 @@
 package io.omosh.dts.services.daraja;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.omosh.dts.config.DarajaConfig;
-import io.omosh.dts.dtos.daraja.AccessTokenResponse;
-import io.omosh.dts.dtos.daraja.B2CRequest;
-import io.omosh.dts.dtos.daraja.SyncResponse;
+import io.omosh.dts.dtos.daraja.*;
 import io.omosh.dts.utils.HelperUtil;
-import jakarta.persistence.Access;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,20 +13,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+
 @Service
 public class DarajaApiServiceImpl implements DarajaApiService {
 
     private final DarajaConfig darajaConfig;
     private final WebClient webClient;
     ObjectMapper objectMapper;
-    private String authHeader = "";
     Logger logger = LoggerFactory.getLogger(DarajaApiServiceImpl.class);
+
+    private AccessTokenResponse cachedToken;
+    private Instant expiryTime;
 
     @Autowired
     public DarajaApiServiceImpl(DarajaConfig darajaConfig, WebClient.Builder webClientBuilder) {
         this.darajaConfig = darajaConfig;
         this.webClient = webClientBuilder.build();
         objectMapper = new ObjectMapper();
+    }
+
+    public synchronized Mono<String> getValidAccessToken() {
+        if (cachedToken != null && Instant.now().isBefore(expiryTime)) {
+            return Mono.just(cachedToken.getAccessToken());
+        }
+
+        return getAccessToken()
+                .doOnNext(token -> {
+                    this.cachedToken = token;
+                    // Set expiry 1 minute earlier for buffer
+                    this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
+                })
+                .map(AccessTokenResponse::getAccessToken);
     }
 
     @Override
@@ -58,26 +72,85 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> performB2CTransaction(B2CRequest b2CRequest) {
-        return getAccessToken()
-                .flatMap(accessTokenResponse -> {
-                    // Save the token (locally inside the lambda)
-                    try {
-                        String tokenJson = objectMapper.writeValueAsString(accessTokenResponse);
-                        logger.info("Access Token (JSON): {}", tokenJson);
-                    } catch (Exception e) {
-                        logger.error("Error serializing access token", e);
-                    }
+    public Mono<SyncResponse> getB2CTransactionResults(B2CResponse b2CResponse) {
+        logger.info("b2CResponse ::: {}", HelperUtil.toJson(b2CResponse));
+        return null;
+    }
 
-                    System.out.println("accessTokenResponse.getAccessToken()::::   " + accessTokenResponse.getAccessToken());
+    @Override
+    public Mono<SyncResponse> performB2CTransaction(B2CRequestExternal b2CRequestExternal) {
+        B2cRequest b2CRequest = new B2cRequest();
+        String securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
+        String securityCredential2 = HelperUtil.getSecurityCredentials2(darajaConfig.getB2cInitiatorPassword());
+        logger.info("securityCredential encryptPassword :::: {}", securityCredential);
+        logger.info("securityCredential2 getSecurityCredentials2 :::: {}", securityCredential2);
+        b2CRequest.setSecurityCredential(securityCredential);
+        b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
+        b2CRequest.setOriginatorConversationID(HelperUtil.generate());
+        b2CRequest.setQueueTimeOutURL(darajaConfig.getFullB2cCallbackUrl());
+        b2CRequest.setResultURL(darajaConfig.getFullB2cResultUrl());
+        b2CRequest.setPartyA(darajaConfig.getB2cPartyA());
+        /*Add B2CRequestExternal to B2CRequest*/
+        b2CRequest.setAmount(b2CRequestExternal.getAmount());
+        b2CRequest.setCommandID(b2CRequestExternal.getCommandID());
+        b2CRequest.setPartyB(b2CRequestExternal.getPartyB());
+        b2CRequest.setRemarks(b2CRequestExternal.getRemarks());
+        b2CRequest.setOccassion(b2CRequestExternal.getOccassion());
+        logger.info("B2CRequest just before submit :: {} ", HelperUtil.toJson(b2CRequest));
 
-                    return Mono.just(new SyncResponse());
-                });
+        return getValidAccessToken()
+                .flatMap(token ->
+                        webClient.post()
+                                .uri(darajaConfig.getB2cUrl())
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(b2CRequest)
+                                .retrieve()
+                                .bodyToMono(SyncResponse.class)
+                                .doOnNext(response -> logger.info("Access token: Received response: {}", response))
+                                .doOnError(error -> logger.error("POST request failed", error))
+                );
+    }
+
+    @Override
+    public Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister) {
+//        c2bRegister.setConfirmationURL(darajaConfig.getFullB2cConfirmationUrl());
+//        c2bRegister.setValidationURL(darajaConfig.getFullB2cValidationUrl());
+//        c2bRegister.setResponseType("Completed");
+//        c2bRegister.setShortCode(darajaConfig.getC2bShortCode());
+
+        logger.info("c2bRegister ::: {}", HelperUtil.toJson(c2bRegister));
+        return getValidAccessToken()
+                .flatMap(token ->
+                        webClient.post()
+                                .uri(darajaConfig.getC2bRegisterUrl())
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(c2bRegister)
+                                .retrieve()
+                                .bodyToMono(SyncResponse.class)
+                                .doOnNext(response -> logger.info("C2B Reg URL: Received response: {}", response))
+                                .doOnError(error -> logger.error("POST request failed", error))
+                );
     }
 
 
     public void printConfig() {
-        System.out.println("Consumer Key: " + darajaConfig.getConsumerKey());
-        System.out.println("Consumer Secret: " + darajaConfig.getConsumerSecret());
+        System.out.println("consumer-key: " + darajaConfig.getConsumerKey());
+        System.out.println("consumer-secret: " + darajaConfig.getConsumerSecret());
+        System.out.println("security-credential: " + darajaConfig.getSecurityCredential());
+        System.out.println("auth-url: " + darajaConfig.getAuthUrl());
+        System.out.println("b2c-url: " + darajaConfig.getB2cUrl());
+        System.out.println("base-url: " + darajaConfig.getBaseUrl());
+        System.out.println("callback-url: " + darajaConfig.getFullB2cCallbackUrl());
+        System.out.println("initiate-b2c-url: " + darajaConfig.getFullB2cInitiateUrl());
+        System.out.println("b2c-party-a: " + darajaConfig.getB2cPartyA());
+        System.out.println("b2c-initiator-name: " + darajaConfig.getB2cInitiatorName());
+        System.out.println("b2c-initiator-password: " + darajaConfig.getB2cInitiatorPassword());
+        System.out.println("c2b-short-code: " + darajaConfig.getC2bShortCode());
+        System.out.println("c2b-register-url: " + darajaConfig.getC2bRegisterUrl());
+        System.out.println("c2b-confirmation-url: " + darajaConfig.getFullC2bConfirmationUrl());
+        System.out.println("c2b-validation-url: " + darajaConfig.getFullC2bValidationUrl());
     }
+
 }

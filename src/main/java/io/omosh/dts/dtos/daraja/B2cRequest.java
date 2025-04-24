@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class B2CRequest{
+public class B2cRequest {
 
 	@JsonProperty("QueueTimeOutURL")
 	private String queueTimeOutURL;
@@ -38,4 +38,5 @@ public class B2CRequest{
 
 	@JsonProperty("ResultURL")
 	private String resultURL;
+
 }

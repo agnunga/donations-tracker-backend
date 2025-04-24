@@ -35,5 +35,17 @@ daraja:
   configs:
     consumer-key: ${DARAJA_CONSUMER_KEY}
     consumer-secret: ${DARAJA_CONSUMER_SECRET}
+    security-credential: ${DARAJA_SECURITY_CREDENTIAL}
     auth-url: https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
+    base-url: https://5138-105-160-121-107.ngrok-free.app
     b2c-url: https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest
+    b2c-initiator-name: ${DARAJA_B2C_INITIATOR_NAME}
+    b2c-initiator-password: ${DARAJA_B2C_INITIATOR_PASSWORD}
+    b2c-party-a: 600999
+    b2c-initiate-url: /momo/b2c-initiate
+    b2c-callback-url: /momo/b2c-callback
+    b2c-result-url: /momo/b2c-result
+    c2b-short-code: 107031
+    c2b-register-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
+    c2b-confirmation-url: /momo/c2b-confirmation
+    c2b-validation-url: /momo/c2b-validation

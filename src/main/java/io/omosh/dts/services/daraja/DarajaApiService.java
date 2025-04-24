@@ -1,9 +1,6 @@
 package io.omosh.dts.services.daraja;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.omosh.dts.dtos.daraja.AccessTokenResponse;
-import io.omosh.dts.dtos.daraja.B2CRequest;
-import io.omosh.dts.dtos.daraja.SyncResponse;
+import io.omosh.dts.dtos.daraja.*;
 import reactor.core.publisher.Mono;
 
 public interface DarajaApiService {
@@ -11,7 +8,11 @@ public interface DarajaApiService {
     /*Authorization*/
     Mono<AccessTokenResponse> getAccessToken();
 
-    Mono<SyncResponse> performB2CTransaction(B2CRequest b2CRequest);
+    Mono<SyncResponse> getB2CTransactionResults(B2CResponse b2CResponse);
+
+    Mono<SyncResponse> performB2CTransaction(B2CRequestExternal b2CRequestExternal);
+
+    Mono<SyncResponse> c2bRegisterUrl(C2bRegister c2bRegister);
 
 
     /*Customer To Business (C2B)*/
