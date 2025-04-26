@@ -3,7 +3,7 @@ package io.omosh.dts.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.omosh.dts.dtos.daraja.AcknowledgeResponse;
-import io.omosh.dts.dtos.daraja.B2CResponse;
+import io.omosh.dts.dtos.daraja.B2cResponse;
 import io.omosh.dts.dtos.DonationsStatsDTO;
 import io.omosh.dts.models.Donation;
 import io.omosh.dts.services.DonationService;
@@ -34,7 +34,7 @@ public class DonationController {
     }
 
     @PostMapping(value = "/payment", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2CResponse serviceResponse) throws JsonProcessingException {
+    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2cResponse serviceResponse) throws JsonProcessingException {
         System.out.println("Entering paymentResult method");
         ObjectMapper objectMapper = new ObjectMapper();
         logger.info("payment res paymentResult: {}", objectMapper.writeValueAsString(serviceResponse));

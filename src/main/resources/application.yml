@@ -46,16 +46,20 @@ daraja:
     b2c-callback-url: /momo/b2c-callback
     b2c-result-url: /momo/b2c-result
     c2b-short-code: 600983
-    c2b-register-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
+    c2b-register-url-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
     c2b-register-call-url: /momo/c2b-register-call
     c2b-confirmation-url: /momo/c2b-confirmation
     c2b-validation-url: /momo/c2b-validation
     c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
     query-transaction-url: https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query
     query-transaction-call-url: /momo/query-transaction-call
-    query-transaction-queue-timeout-url: /momo/query-transaction-queue-timeout
+    query-transaction-queue-url: /momo/query-transaction-queue
     query-transaction-result: /momo/query-transaction-result
-    query-balance-url: https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query
-    query-bal-queue-timeout-url: /momo/query-bal-queue-timeout
+    query-bal-url: https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query
+    query-bal-queue-url: /momo/query-bal-queue
     query-bal-result-url: /momo/query-bal-result
     query-bal-call-url: /momo/query-bal-call
+    reversal-url: https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request
+    reversal-queue-url: /momo/reversal-queue
+    reversal-result-url: /momo/reversal-result
+    reversal-result-call-url: /momo/reversal-call

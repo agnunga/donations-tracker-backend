@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/momo")
@@ -27,21 +29,21 @@ public class DarajaController {
 
     @SneakyThrows
     @PostMapping(value = "/b2c-initiate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> initiateB2cPayment(@RequestBody B2CRequestExternal b2CRequestExternal) {
+    public ResponseEntity<AcknowledgeResponse> initiateB2cPayment(@RequestBody B2cRequestExternal b2CRequestExternal) {
         logger.info("Just in b2CRequestExternal :::: {}", HelperUtil.toJson(b2CRequestExternal));
         service.performB2CTransaction(b2CRequestExternal).subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/b2c-callback", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> paymentCallback(@RequestBody B2CResponse b2CResponse) {
+    public ResponseEntity<AcknowledgeResponse> paymentCallback(@RequestBody B2cResponse b2CResponse) {
         logger.info("Just in paymentCallback Body: {}", HelperUtil.toJson(b2CResponse));
         service.getB2CTransactionResults(b2CResponse);
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/b2c-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2CResponse b2CResponse) {
+    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2cResponse b2CResponse) {
         logger.info("Just in paymentResult Body: {}", HelperUtil.toJson(b2CResponse));
 
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
@@ -86,8 +88,8 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
-    @PostMapping(value = "/query-transaction-queue-timeout", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> queryTransactionQueueTimeout(@RequestBody TransactionStatusResponse statusResponse) {
+    @PostMapping(value = "/query-transaction-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryTransactionQueueTimeout(@RequestBody TransactionStatusResult statusResponse) {
         logger.info("Just in queryTransactionQueueTimeout :::: {}", HelperUtil.toJson(statusResponse));
         boolean success = service.queryTransactionQueueTimeout(statusResponse);
         if (success)
@@ -96,7 +98,7 @@ public class DarajaController {
     }
 
     @PostMapping(value = "/query-transaction-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> queryTransactionResult(@RequestBody TransactionStatusResponse statusResponse) {
+    public ResponseEntity<AcknowledgeResponse> queryTransactionResult(@RequestBody TransactionStatusResult statusResponse) {
         logger.info("Just in queryTransactionResult :::: {}", HelperUtil.toJson(statusResponse));
         boolean success = service.queryTransactionResult(statusResponse);
         if (success)
@@ -111,7 +113,7 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
-    @PostMapping(value = "/query-bal-queue-timeout", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/query-bal-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> queryBalQueueTimeout(@RequestBody QueryBalanceResult queryBalanceResult) {
         logger.info("Just in queryBalQueueTimeout :::: {}", HelperUtil.toJson(queryBalanceResult));
         boolean success = service.queryBalQueueTimeout(queryBalanceResult);
@@ -129,5 +131,29 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("nok"));
     }
 
+    @PostMapping(value = "/reversal-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> reversalResult(@RequestBody ReversalResult reversalResult) {
+        logger.info("Just in reversalResult :::: {}", HelperUtil.toJson(reversalResult));
+        boolean success = service.reversalResult(reversalResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/reversal-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> reversalQueue(@RequestBody ReversalResult reversalResult) {
+        logger.info("Just in reversalQueue :::: {}", HelperUtil.toJson(reversalResult));
+        boolean success = service.reversalQueue(reversalResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/reversal-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> reversalCall() {
+        logger.info("Just in reversalCall :::: ");
+        service.reversal().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
 
 }

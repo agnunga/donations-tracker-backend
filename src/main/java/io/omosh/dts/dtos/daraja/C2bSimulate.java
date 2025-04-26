@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class C2bSumulate{
+public class C2bSimulate {
 
 	@JsonProperty("ShortCode")
 	private String shortCode;

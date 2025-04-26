@@ -5,8 +5,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.PersistenceCreator;
 
 @Data
-@Getter
-@Setter
 public class DonationsStatsDTO {
 
     private Long donationCount;

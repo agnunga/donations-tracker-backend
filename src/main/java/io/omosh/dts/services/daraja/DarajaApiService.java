@@ -8,9 +8,9 @@ public interface DarajaApiService {
     /*Authorization*/
     Mono<AccessTokenResponse> getAccessToken();
 
-    Mono<SyncResponse> getB2CTransactionResults(B2CResponse b2CResponse);
+    Mono<SyncResponse> getB2CTransactionResults(B2cResponse b2CResponse);
 
-    Mono<SyncResponse> performB2CTransaction(B2CRequestExternal b2CRequestExternal);
+    Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal);
 
     Mono<SyncResponse> c2bRegisterUrl();
 
@@ -22,15 +22,21 @@ public interface DarajaApiService {
 
     Mono<SyncResponse> queryTransaction();
 
-    boolean queryTransactionQueueTimeout(TransactionStatusResponse statusResponse);
+    boolean queryTransactionQueueTimeout(TransactionStatusResult statusResponse);
 
-    boolean queryTransactionResult(TransactionStatusResponse statusResponse);
+    boolean queryTransactionResult(TransactionStatusResult statusResponse);
 
     Mono<SyncResponse> queryBalance();
 
     boolean queryBalResult(QueryBalanceResult queryBalanceResult);
 
     boolean queryBalQueueTimeout(QueryBalanceResult queryBalanceResult);
+
+    Mono<SyncResponse> reversal();
+
+    boolean reversalQueue(ReversalResult reversalResult);
+
+    boolean reversalResult(ReversalResult reversalResult);
 
 
     /*Customer To Business (C2B)*/

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class B2CRequestExternal {
+public class B2cRequestExternal {
 
 	@JsonProperty("Remarks")
 	private String remarks;

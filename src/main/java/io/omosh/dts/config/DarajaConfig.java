@@ -20,7 +20,7 @@ public class DarajaConfig {
     private String b2cInitiateUrl;
     private String b2cCallbackUrl;
     private String b2cResultUrl;
-    private String c2bRegisterUrl;
+    private String c2bRegisterUrlUrl;
     private String c2bRegisterCallUrl;
     private String c2bShortCode;
     private String c2bConfirmationUrl;
@@ -28,12 +28,16 @@ public class DarajaConfig {
     private String c2bSimulateUrl;
     private String queryTransactionUrl;
     private String queryTransactionCallUrl;
-    private String queryTransactionQueueTimeoutUrl;
+    private String queryTransactionQueueUrl;
     private String queryTransactionResult;
-    private String queryBalanceUrl;
-    private String queryBalQueueTimeoutURL;
-    private String queryBalResultURL;
-    private String queryBalCallURL;
+    private String queryBalUrl;
+    private String queryBalQueueUrl;
+    private String queryBalResultUrl;
+    private String queryBalCallUrl;
+    private String reversalUrl;
+    private String reversalQueueUrl;
+    private String reversalResultUrl;
+    private String reversalCallUrl;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();
@@ -63,24 +67,36 @@ public class DarajaConfig {
         return getBaseUrl() + getQueryTransactionCallUrl();
     }
 
-    public String getFullQueryTransactionQueueTimeoutUrl() {
-        return getBaseUrl() + getQueryTransactionQueueTimeoutUrl();
+    public String getFullQueryTransactionQueueUrl() {
+        return getBaseUrl() + getQueryTransactionQueueUrl();
     }
 
     public String getFullQueryTransactionResult() {
         return getBaseUrl() + getQueryTransactionResult();
     }
 
-    public String getFullQueryBalQueueTimeoutURL() {
-        return getBaseUrl() + getQueryBalQueueTimeoutURL();
+    public String getFullQueryBalQueueUrl() {
+        return getBaseUrl() + getQueryBalQueueUrl();
     }
 
-    public String getFullQueryBalResultURL() {
-        return getBaseUrl() + getQueryBalResultURL();
+    public String getFullQueryBalResultUrl() {
+        return getBaseUrl() + getQueryBalResultUrl();
     }
 
     public String getFullQueryBalCallURL() {
-        return getBaseUrl() + getQueryBalCallURL();
+        return getBaseUrl() + getQueryBalCallUrl();
+    }
+
+    public String getFullReversalQueueUrl() {
+        return getBaseUrl() + getReversalQueueUrl();
+    }
+
+    public String getFullReversalResultUrl() {
+        return getBaseUrl() + getReversalResultUrl();
+    }
+
+    public String getFullReversalCallURL() {
+        return getBaseUrl() + getReversalCallUrl();
     }
 
 }
