@@ -37,7 +37,7 @@ daraja:
     consumer-secret: ${DARAJA_CONSUMER_SECRET}
     security-credential: ${DARAJA_SECURITY_CREDENTIAL}
     auth-url: https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
-    base-url: https://5138-105-160-121-107.ngrok-free.app
+    base-url: https://e41a-2c0f-fe38-2326-8c7e-b5d5-f8f4-e4ff-c0b0.ngrok-free.app
     b2c-url: https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest
     b2c-initiator-name: ${DARAJA_B2C_INITIATOR_NAME}
     b2c-initiator-password: ${DARAJA_B2C_INITIATOR_PASSWORD}
@@ -55,3 +55,7 @@ daraja:
     query-transaction-call-url: /momo/query-transaction-call
     query-transaction-queue-timeout-url: /momo/query-transaction-queue-timeout
     query-transaction-result: /momo/query-transaction-result
+    query-balance-url: https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query
+    query-bal-queue-timeout-url: /momo/query-bal-queue-timeout
+    query-bal-result-url: /momo/query-bal-result
+    query-bal-call-url: /momo/query-bal-call

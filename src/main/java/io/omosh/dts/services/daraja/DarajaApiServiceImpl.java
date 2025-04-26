@@ -26,13 +26,20 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     private AccessTokenResponse cachedToken;
     private Instant expiryTime;
+    private String securityCredential;
 
     @Autowired
     public DarajaApiServiceImpl(DarajaConfig darajaConfig, WebClient.Builder webClientBuilder) {
         this.darajaConfig = darajaConfig;
         this.webClient = webClientBuilder.build();
         objectMapper = new ObjectMapper();
+        this.securityCredential = securityCredential();
     }
+
+    private String securityCredential() {
+        return HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
+    }
+
 
     public synchronized Mono<String> getValidAccessToken() {
         if (cachedToken != null && Instant.now().isBefore(expiryTime)) {
@@ -43,6 +50,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                 .doOnNext(token -> {
                     this.cachedToken = token;
                     // Set expiry 1 minute earlier for buffer
+                    logger.info("cachedToken :::::: {}", cachedToken);
                     this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
                 })
                 .map(AccessTokenResponse::getAccessToken);
@@ -64,11 +72,11 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(AccessTokenResponse.class)
-                    .doOnError(e -> logger.error("Failed to fetch access token", e));
+                    .doOnError(e -> logger.error("Failed to fetch access token::{}", e.getMessage()));
 
         } catch (Exception e) {
             // Wrap checked exception (e.g., Base64 encoding) in a Mono error
-            return Mono.error(new RuntimeException("Error creating auth header", e));
+            return Mono.error(new RuntimeException("Error creating auth header::: {}", e));
         }
     }
 
@@ -81,10 +89,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> performB2CTransaction(B2CRequestExternal b2CRequestExternal) {
         B2cRequest b2CRequest = new B2cRequest();
-        String securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
-        String securityCredential2 = HelperUtil.getSecurityCredentials2(darajaConfig.getB2cInitiatorPassword());
         logger.info("securityCredential encryptPassword :::: {}", securityCredential);
-        logger.info("securityCredential2 getSecurityCredentials2 :::: {}", securityCredential2);
         b2CRequest.setSecurityCredential(securityCredential);
         b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
         b2CRequest.setOriginatorConversationID(HelperUtil.generate());
@@ -119,7 +124,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
         c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
         c2bRegister.setResponseType("Completed");
-        c2bRegister.setShortCode(darajaConfig.getC2bShortCode());
+        c2bRegister.setShortCode("107031");
 
         logger.info("c2bRegister ::: {}", HelperUtil.toJson(c2bRegister));
         return getValidAccessToken()
@@ -144,7 +149,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         c2bSumulate.setMsisdn("254708374149");
         c2bSumulate.setAmount("10");
         c2bSumulate.setBillRefNumber("paying");
-        c2bSumulate.setShortCode(darajaConfig.getC2bShortCode());
+        c2bSumulate.setShortCode("107031");
 
         logger.info("c2bSimulate :::: {}", c2bSumulate);
         logger.info("simulationUrl :::: {}", simulationUrl);
@@ -183,20 +188,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     @Override
     public Mono<SyncResponse> queryTransaction() {
-        String securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
         String url = darajaConfig.getQueryTransactionUrl();
-        TransactionStatusRequest txnStatusRequest = new TransactionStatusRequest();
-        txnStatusRequest.setInitiator(HelperUtil.generate());
-        txnStatusRequest.setSecurityCredential(securityCredential);
-        txnStatusRequest.setCommandID("TransactionStatusQuery");
-        txnStatusRequest.setTransactionID("OEI2AK4Q16");
-        txnStatusRequest.setOriginatorConversationID("AG_20250425_20101f0bf59d8c36456a");
-        txnStatusRequest.setPartyA("600995");
-        txnStatusRequest.setIdentifierType("1");
-        txnStatusRequest.setResultURL(darajaConfig.getFullQueryTransactionResult());
-        txnStatusRequest.setQueueTimeOutURL(darajaConfig.getFullQueryTransactionQueueTimeoutUrl());
-        txnStatusRequest.setRemarks(null);
-        txnStatusRequest.setOccasion(null);
+        TransactionStatusRequest txnStatusRequest = getTransactionStatusRequest();
         logger.info("queryTransaction -> txnStatusRequest :::: {}", txnStatusRequest);
 
         return getValidAccessToken()
@@ -215,9 +208,25 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 })
                                 .bodyToMono(SyncResponse.class)
                                 .doOnNext(response -> logger.info("query txn Success Response: {}", response))
-                                .doOnError(error -> logger.error("C2B Simulation Exception: {}", error.getMessage(), error))
+                                .doOnError(error -> logger.error("query txn Exception: {}", error.getMessage(), error))
                 );
 
+    }
+
+    private TransactionStatusRequest getTransactionStatusRequest() {
+        TransactionStatusRequest txnStatusRequest = new TransactionStatusRequest();
+        txnStatusRequest.setInitiator(darajaConfig.getB2cInitiatorName());
+        txnStatusRequest.setSecurityCredential(securityCredential);
+        txnStatusRequest.setCommandID("TransactionStatusQuery");
+        txnStatusRequest.setTransactionID("OEI2AK4Q16");
+        txnStatusRequest.setOriginatorConversationID("AG_20250425_20101f0bf59d8c36456a");
+        txnStatusRequest.setPartyA("600987");
+        txnStatusRequest.setIdentifierType("2");
+        txnStatusRequest.setResultURL(darajaConfig.getFullQueryTransactionResult());
+        txnStatusRequest.setQueueTimeOutURL(darajaConfig.getFullQueryTransactionQueueTimeoutUrl());
+        txnStatusRequest.setRemarks("sample remarks");
+        txnStatusRequest.setOccasion(null);
+        return txnStatusRequest;
     }
 
     @Override
@@ -229,6 +238,62 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public boolean queryTransactionResult(TransactionStatusResponse statusResponse) {
         logger.info("Service queryTransactionResult - TransactionStatusResponse statusResponse ::: {}", statusResponse);
+        return false;
+    }
+
+    @Override
+    public Mono<SyncResponse> queryBalance() {
+        logger.info("Service queryBalance");
+        String url = darajaConfig.getQueryBalanceUrl();
+        QueryBalanceRequest queryBalanceRequest = getQueryBalanceRequest();
+
+        logger.info("queryBalanceRequest ::::::: {}", HelperUtil.toJson(queryBalanceRequest));
+
+        return getValidAccessToken()
+                .flatMap(token ->
+                        webClient.post()
+                                .uri(url)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .bodyValue(queryBalanceRequest)
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, clientResponse -> {
+                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
+                                        logger.error("Query bal Error Response: {}", errorBody);
+                                        return Mono.error(new RuntimeException("Query bal failed with status: " + clientResponse.statusCode()));
+                                    });
+                                })
+                                .bodyToMono(SyncResponse.class)
+                                .doOnNext(response -> logger.info("query bal Success Response: {}", response))
+                                .doOnError(error -> logger.error("query bal Exception: {}", error.getMessage(), error))
+                );
+
+    }
+
+    private QueryBalanceRequest getQueryBalanceRequest() {
+        QueryBalanceRequest queryBalanceRequest = new QueryBalanceRequest();
+        queryBalanceRequest.setInitiator(darajaConfig.getB2cInitiatorName());
+        queryBalanceRequest.setSecurityCredential(securityCredential);
+        queryBalanceRequest.setCommandID("AccountBalance");
+        queryBalanceRequest.setPartyA("600978");
+        queryBalanceRequest.setIdentifierType("2");
+        queryBalanceRequest.setRemarks("getbal");
+        queryBalanceRequest.setQueueTimeOutURL(darajaConfig.getFullQueryBalQueueTimeoutURL());
+        queryBalanceRequest.setResultURL(darajaConfig.getFullQueryBalResultURL());
+        return queryBalanceRequest;
+    }
+
+    @Override
+    public boolean queryBalResult(QueryBalanceResult queryBalanceResult) {
+        logger.info("Todo: persist - Service queryBalResult - queryBalanceResult ::: {}", queryBalanceResult);
+
+        return false;
+    }
+
+    @Override
+    public boolean queryBalQueueTimeout(QueryBalanceResult queryBalanceResult) {
+        logger.info("Todo: persist - Service queryBalQueueTimeout - queryBalanceResult ::: {}", queryBalanceResult);
+
         return false;
     }
 
@@ -250,6 +315,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         System.out.println("c2b-confirmation-url: " + darajaConfig.getFullC2bConfirmationUrl());
         System.out.println("c2b-validation-url: " + darajaConfig.getFullC2bValidationUrl());
         System.out.println("c2b-simulation-url: " + darajaConfig.getC2bSimulateUrl());
+        System.out.println("query-balance-url: " + darajaConfig.getQueryBalanceUrl());
     }
 
 }

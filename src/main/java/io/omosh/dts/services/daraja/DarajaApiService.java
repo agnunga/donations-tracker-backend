@@ -26,6 +26,12 @@ public interface DarajaApiService {
 
     boolean queryTransactionResult(TransactionStatusResponse statusResponse);
 
+    Mono<SyncResponse> queryBalance();
+
+    boolean queryBalResult(QueryBalanceResult queryBalanceResult);
+
+    boolean queryBalQueueTimeout(QueryBalanceResult queryBalanceResult);
+
 
     /*Customer To Business (C2B)*/
     /*

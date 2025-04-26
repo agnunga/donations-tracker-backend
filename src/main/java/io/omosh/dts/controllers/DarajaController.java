@@ -104,4 +104,30 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("nok"));
     }
 
+    @PostMapping(value = "/query-bal-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryBalCall() {
+        logger.info("Just in queryBalCall :::: {}", "No req body");
+        service.queryBalance().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
+
+    @PostMapping(value = "/query-bal-queue-timeout", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryBalQueueTimeout(@RequestBody QueryBalanceResult queryBalanceResult) {
+        logger.info("Just in queryBalQueueTimeout :::: {}", HelperUtil.toJson(queryBalanceResult));
+        boolean success = service.queryBalQueueTimeout(queryBalanceResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/query-bal-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> queryBalResult(@RequestBody QueryBalanceResult queryBalanceResult) {
+        logger.info("Just in queryBalResult :::: {}", HelperUtil.toJson(queryBalanceResult));
+        boolean success = service.queryBalResult(queryBalanceResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+
 }

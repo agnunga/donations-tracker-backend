@@ -30,6 +30,10 @@ public class DarajaConfig {
     private String queryTransactionCallUrl;
     private String queryTransactionQueueTimeoutUrl;
     private String queryTransactionResult;
+    private String queryBalanceUrl;
+    private String queryBalQueueTimeoutURL;
+    private String queryBalResultURL;
+    private String queryBalCallURL;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();
@@ -65,6 +69,18 @@ public class DarajaConfig {
 
     public String getFullQueryTransactionResult() {
         return getBaseUrl() + getQueryTransactionResult();
+    }
+
+    public String getFullQueryBalQueueTimeoutURL() {
+        return getBaseUrl() + getQueryBalQueueTimeoutURL();
+    }
+
+    public String getFullQueryBalResultURL() {
+        return getBaseUrl() + getQueryBalResultURL();
+    }
+
+    public String getFullQueryBalCallURL() {
+        return getBaseUrl() + getQueryBalCallURL();
     }
 
 }
