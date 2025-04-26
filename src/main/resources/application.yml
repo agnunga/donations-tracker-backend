@@ -62,4 +62,8 @@ daraja:
     reversal-url: https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request
     reversal-queue-url: /momo/reversal-queue
     reversal-result-url: /momo/reversal-result
-    reversal-result-call-url: /momo/reversal-call
+    reversal-call-url: /momo/reversal-call
+    remit-tax-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/remittax
+    remit-tax-queue-url: /momo/remittax-queue
+    remit-tax-result-url: /momo/remittax-result
+    remit-tax-call-url: /momo/remittax-call

@@ -1,6 +1,7 @@
 package io.omosh.dts.services.daraja;
 
 import io.omosh.dts.dtos.daraja.*;
+import reactor.core.CorePublisher;
 import reactor.core.publisher.Mono;
 
 public interface DarajaApiService {
@@ -38,6 +39,11 @@ public interface DarajaApiService {
 
     boolean reversalResult(ReversalResult reversalResult);
 
+    boolean remitTaxResult(RemitTaxResponse remitTaxResponse);
+
+    boolean remitTaxQueue(RemitTaxResponse remitTaxResponse);
+
+    Mono<SyncResponse> remitTax();
 
     /*Customer To Business (C2B)*/
     /*

@@ -38,6 +38,10 @@ public class DarajaConfig {
     private String reversalQueueUrl;
     private String reversalResultUrl;
     private String reversalCallUrl;
+    private String remitTaxUrl;
+    private String remitTaxQueueUrl;
+    private String remitTaxResultUrl;
+    private String remitTaxCallUrl;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();
@@ -97,6 +101,19 @@ public class DarajaConfig {
 
     public String getFullReversalCallURL() {
         return getBaseUrl() + getReversalCallUrl();
+    }
+
+
+    public String getFullRemitTaxQueueUrl() {
+        return getBaseUrl() + getRemitTaxQueueUrl();
+    }
+
+    public String getFullRemitTaxResultUrl() {
+        return getBaseUrl() + getRemitTaxResultUrl();
+    }
+
+    public String getFullRemitTaxCallURL() {
+        return getBaseUrl() + getRemitTaxCallUrl();
     }
 
 }

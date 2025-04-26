@@ -156,4 +156,29 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
+    @PostMapping(value = "/remit-tax-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> remitTaxResult(@RequestBody RemitTaxResponse remitTaxResponse) {
+        logger.info("Just in remitTaxResult :::: {}", HelperUtil.toJson(remitTaxResponse));
+        boolean success = service.remitTaxResult(remitTaxResponse);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/remit-tax-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> remitTaxQueue(@RequestBody RemitTaxResponse remitTaxResponse) {
+        logger.info("Just in remitTaxQueue :::: {}", HelperUtil.toJson(remitTaxResponse));
+        boolean success = service.remitTaxQueue(remitTaxResponse);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/remit-tax-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> remitTaxCall() {
+        logger.info("Just in remitTaxCall :::: ");
+        service.remitTax().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
+
 }

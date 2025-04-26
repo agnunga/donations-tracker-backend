@@ -26,7 +26,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     private AccessTokenResponse cachedToken;
     private Instant expiryTime;
-    private String securityCredential;
+    private final String securityCredential;
 
     @Autowired
     public DarajaApiServiceImpl(DarajaConfig darajaConfig, WebClient.Builder webClientBuilder) {
@@ -144,34 +144,12 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> c2bSimulate() {
         String simulationUrl = darajaConfig.getC2bSimulateUrl();
-        C2bSimulate c2BSimulate = new C2bSimulate();
-        c2BSimulate.setCommandID("CustomerPayBillOnline");
-        c2BSimulate.setMsisdn("254708374149");
-        c2BSimulate.setAmount("10");
-        c2BSimulate.setBillRefNumber("paying");
-        c2BSimulate.setShortCode("107031");
+        C2bSimulate c2BSimulate = getC2bSimulate();
 
         logger.info("c2bSimulate :::: {}", c2BSimulate);
         logger.info("simulationUrl :::: {}", simulationUrl);
 
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(simulationUrl)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .bodyValue(c2BSimulate)
-                                .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> {
-                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                                        logger.error("C2B Simulation Error Response: {}", errorBody);
-                                        return Mono.error(new RuntimeException("C2B Simulation failed with status: " + clientResponse.statusCode()));
-                                    });
-                                })
-                                .bodyToMono(SyncResponse.class)
-                                .doOnNext(response -> logger.info("C2B Simulation Success Response: {}", response))
-                                .doOnError(error -> logger.error("C2B Simulation Exception: {}", error.getMessage(), error))
-                );
+        return callPost(simulationUrl, c2BSimulate);
     }
 
     @Override
@@ -192,25 +170,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         TransactionStatusRequest txnStatusRequest = getTransactionStatusRequest();
         logger.info("queryTransaction -> txnStatusRequest :::: {}", txnStatusRequest);
 
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(url)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .bodyValue(txnStatusRequest)
-                                .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> {
-                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                                        logger.error("Query txn Error Response: {}", errorBody);
-                                        return Mono.error(new RuntimeException("Query txn failed with status: " + clientResponse.statusCode()));
-                                    });
-                                })
-                                .bodyToMono(SyncResponse.class)
-                                .doOnNext(response -> logger.info("query txn Success Response: {}", response))
-                                .doOnError(error -> logger.error("query txn Exception: {}", error.getMessage(), error))
-                );
-
+        return callPost(url, txnStatusRequest);
     }
 
     @Override
@@ -232,26 +192,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         QueryBalanceRequest queryBalanceRequest = getQueryBalanceRequest();
 
         logger.info("queryBalanceRequest ::::::: {}", HelperUtil.toJson(queryBalanceRequest));
-
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(url)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .bodyValue(queryBalanceRequest)
-                                .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> {
-                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                                        logger.error("Query bal Error Response: {}", errorBody);
-                                        return Mono.error(new RuntimeException("Query bal failed with status: " + clientResponse.statusCode()));
-                                    });
-                                })
-                                .bodyToMono(SyncResponse.class)
-                                .doOnNext(response -> logger.info("query bal Success Response: {}", response))
-                                .doOnError(error -> logger.error("query bal Exception: {}", error.getMessage(), error))
-                );
-
+        return callPost(url, queryBalanceRequest);
     }
 
     @Override
@@ -271,6 +212,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> reversal() {
         String url = darajaConfig.getReversalUrl();
+        logger.info("Service reversal - :::");
         return callPost(url, getReversalRequest());
     }
 
@@ -288,7 +230,27 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return false;
     }
 
+    @Override
+    public boolean remitTaxResult(RemitTaxResponse remitTaxResponse) {
+        logger.info("Todo: persist - Service remitTaxResult - ::: {}", remitTaxResponse);
+        return false;
+    }
+
+    @Override
+    public boolean remitTaxQueue(RemitTaxResponse remitTaxResponse) {
+        logger.info("Todo: persist - Service remitTaxQueue - ::: {}", remitTaxResponse);
+        return false;
+    }
+
+    @Override
+    public Mono<SyncResponse> remitTax() {
+        RemitTaxRequest remitTaxRequest = getRemitTaxRequest();
+        logger.info("Service remitTax - :::");
+        return callPost(darajaConfig.getRemitTaxUrl(), remitTaxRequest);
+    }
+
     private Mono<SyncResponse> callPost(String url, Object request) {
+        logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(objectMapper));
         return getValidAccessToken()
                 .flatMap(token ->
                         webClient.post()
@@ -307,6 +269,33 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 .doOnNext(response -> logger.info("callPost Success Response: {}", response))
                                 .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage(), error))
                 );
+    }
+
+    private RemitTaxRequest getRemitTaxRequest() {
+        RemitTaxRequest remitTaxRequest = new RemitTaxRequest();
+        remitTaxRequest.setInitiator(darajaConfig.getB2cInitiatorName());
+        remitTaxRequest.setSecurityCredential(securityCredential);
+        remitTaxRequest.setCommandID("PayTaxToKRA");
+        remitTaxRequest.setSenderIdentifierType("4");
+        remitTaxRequest.setReceiverIdentifierType("4");
+        remitTaxRequest.setAmount("10");
+        remitTaxRequest.setPartyA("600980");
+        remitTaxRequest.setPartyB("572572");
+        remitTaxRequest.setAccountReference("353353");
+        remitTaxRequest.setRemarks("sample-remarks");
+        remitTaxRequest.setQueueTimeOutURL(darajaConfig.getFullRemitTaxQueueUrl());
+        remitTaxRequest.setResultURL(darajaConfig.getFullRemitTaxResultUrl());
+        return remitTaxRequest;
+    }
+
+    private C2bSimulate getC2bSimulate() {
+        C2bSimulate c2BSimulate = new C2bSimulate();
+        c2BSimulate.setCommandID("CustomerPayBillOnline");
+        c2BSimulate.setMsisdn("254708374149");
+        c2BSimulate.setAmount("10");
+        c2BSimulate.setBillRefNumber("paying");
+        c2BSimulate.setShortCode("107031");
+        return c2BSimulate;
     }
 
     private TransactionStatusRequest getTransactionStatusRequest() {
