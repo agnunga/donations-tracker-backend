@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class RemitTaxResponse {
+public class RemitTaxResult {
 
 	@JsonProperty("Result")
 	private Result result;

@@ -42,6 +42,10 @@ public class DarajaConfig {
     private String remitTaxQueueUrl;
     private String remitTaxResultUrl;
     private String remitTaxCallUrl;
+    private String paymentRequestUrl;
+    private String paymentRequestQueueUrl;
+    private String paymentRequestResultUrl;
+    private String paymentRequestCallUrl;
 
     public String getFullB2cInitiateUrl() {
         return getBaseUrl() + getB2cInitiateUrl();
@@ -103,7 +107,6 @@ public class DarajaConfig {
         return getBaseUrl() + getReversalCallUrl();
     }
 
-
     public String getFullRemitTaxQueueUrl() {
         return getBaseUrl() + getRemitTaxQueueUrl();
     }
@@ -114,6 +117,18 @@ public class DarajaConfig {
 
     public String getFullRemitTaxCallURL() {
         return getBaseUrl() + getRemitTaxCallUrl();
+    }
+
+    public String getFullPaymentRequestQueueUrl() {
+        return getBaseUrl() + getPaymentRequestQueueUrl();
+    }
+
+    public String getFullPaymentRequestResultUrl() {
+        return getBaseUrl() + getPaymentRequestResultUrl();
+    }
+
+    public String getFullPaymentRequestCallURL() {
+        return getBaseUrl() + getPaymentRequestCallUrl();
     }
 
 }

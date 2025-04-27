@@ -42,28 +42,37 @@ daraja:
     b2c-initiator-name: ${DARAJA_B2C_INITIATOR_NAME}
     b2c-initiator-password: ${DARAJA_B2C_INITIATOR_PASSWORD}
     b2c-party-a: 600999
+    c2b-short-code: 600983
+    c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
+    c2b-register-url-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
     b2c-initiate-url: /momo/b2c-initiate
     b2c-callback-url: /momo/b2c-callback
     b2c-result-url: /momo/b2c-result
-    c2b-short-code: 600983
-    c2b-register-url-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
-    c2b-register-call-url: /momo/c2b-register-call
     c2b-confirmation-url: /momo/c2b-confirmation
     c2b-validation-url: /momo/c2b-validation
-    c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
+    c2b-register-call-url: /momo/c2b-register-call
+
     query-transaction-url: https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query
-    query-transaction-call-url: /momo/query-transaction-call
     query-transaction-queue-url: /momo/query-transaction-queue
     query-transaction-result: /momo/query-transaction-result
+    query-transaction-call-url: /momo/query-transaction-call
+
     query-bal-url: https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query
     query-bal-queue-url: /momo/query-bal-queue
     query-bal-result-url: /momo/query-bal-result
     query-bal-call-url: /momo/query-bal-call
+
     reversal-url: https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request
     reversal-queue-url: /momo/reversal-queue
     reversal-result-url: /momo/reversal-result
     reversal-call-url: /momo/reversal-call
+
     remit-tax-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/remittax
-    remit-tax-queue-url: /momo/remittax-queue
-    remit-tax-result-url: /momo/remittax-result
-    remit-tax-call-url: /momo/remittax-call
+    remit-tax-queue-url: /momo/remit-tax-queue
+    remit-tax-result-url: /momo/remit-tax-result
+    remit-tax-call-url: /momo/remit-tax-call
+
+    payment-request-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest
+    payment-request-queue-url: /momo/payment-request-queue
+    payment-request-result-url: /momo/payment-request-result
+    payment-request-call-url: /momo/payment-request-call

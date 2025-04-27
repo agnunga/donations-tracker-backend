@@ -33,13 +33,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         this.darajaConfig = darajaConfig;
         this.webClient = webClientBuilder.build();
         objectMapper = new ObjectMapper();
-        this.securityCredential = securityCredential();
+        this.securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
     }
-
-    private String securityCredential() {
-        return HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
-    }
-
 
     public synchronized Mono<String> getValidAccessToken() {
         if (cachedToken != null && Instant.now().isBefore(expiryTime)) {
@@ -88,68 +83,23 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     @Override
     public Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal) {
-        B2cRequest b2CRequest = new B2cRequest();
-        logger.info("securityCredential encryptPassword :::: {}", securityCredential);
-        b2CRequest.setSecurityCredential(securityCredential);
-        b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
-        b2CRequest.setOriginatorConversationID(HelperUtil.generate());
-        b2CRequest.setQueueTimeOutURL(darajaConfig.getFullB2cCallbackUrl());
-        b2CRequest.setResultURL(darajaConfig.getFullB2cResultUrl());
-        b2CRequest.setPartyA(darajaConfig.getB2cPartyA());
-        /*Add B2cRequestExternal to B2CRequest*/
-        b2CRequest.setAmount(b2CRequestExternal.getAmount());
-        b2CRequest.setCommandID(b2CRequestExternal.getCommandID());
-        b2CRequest.setPartyB(b2CRequestExternal.getPartyB());
-        b2CRequest.setRemarks(b2CRequestExternal.getRemarks());
-        b2CRequest.setOccassion(b2CRequestExternal.getOccassion());
-        logger.info("B2CRequest just before submit :: {} ", HelperUtil.toJson(b2CRequest));
-
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(darajaConfig.getB2cUrl())
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(b2CRequest)
-                                .retrieve()
-                                .bodyToMono(SyncResponse.class)
-                                .doOnNext(response -> logger.info("Access token: Received response: {}", response))
-                                .doOnError(error -> logger.error("POST request failed", error))
-                );
+        logger.info("Service performB2CTransaction :::");
+        B2cRequest b2CRequest = getB2cRequest(b2CRequestExternal);
+        return callPost(darajaConfig.getB2cUrl(), b2CRequest);
     }
 
     @Override
     public Mono<SyncResponse> c2bRegisterUrl() {
-        C2bRegisterUrl c2bRegister = new C2bRegisterUrl();
-        c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
-        c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
-        c2bRegister.setResponseType("Completed");
-        c2bRegister.setShortCode("107031");
-
-        logger.info("c2bRegister ::: {}", HelperUtil.toJson(c2bRegister));
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(darajaConfig.getC2bRegisterUrlUrl())
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(c2bRegister)
-                                .retrieve()
-                                .bodyToMono(SyncResponse.class)
-                                .doOnNext(response -> logger.info("C2B Reg URL: Received response: {}", response))
-                                .doOnError(error -> logger.error("POST request failed", error))
-                );
+        logger.info("Service c2bRegisterUrl :::");
+        C2bRegisterUrl c2bRegister = getC2bRegisterUrl();
+        return callPost(darajaConfig.getC2bRegisterUrlUrl(), c2bRegister);
     }
 
     @Override
     public Mono<SyncResponse> c2bSimulate() {
-        String simulationUrl = darajaConfig.getC2bSimulateUrl();
+        logger.info("Service c2bSimulate :::");
         C2bSimulate c2BSimulate = getC2bSimulate();
-
-        logger.info("c2bSimulate :::: {}", c2BSimulate);
-        logger.info("simulationUrl :::: {}", simulationUrl);
-
-        return callPost(simulationUrl, c2BSimulate);
+        return callPost(darajaConfig.getC2bSimulateUrl(), c2BSimulate);
     }
 
     @Override
@@ -166,11 +116,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     @Override
     public Mono<SyncResponse> queryTransaction() {
-        String url = darajaConfig.getQueryTransactionUrl();
-        TransactionStatusRequest txnStatusRequest = getTransactionStatusRequest();
-        logger.info("queryTransaction -> txnStatusRequest :::: {}", txnStatusRequest);
-
-        return callPost(url, txnStatusRequest);
+        logger.info("Service queryTransaction :::: ");
+        return callPost(darajaConfig.getQueryTransactionUrl(), getTransactionStatusRequest());
     }
 
     @Override
@@ -186,34 +133,29 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> queryBalance() {
-        logger.info("Service queryBalance");
-        String url = darajaConfig.getQueryBalUrl();
-        QueryBalanceRequest queryBalanceRequest = getQueryBalanceRequest();
-
-        logger.info("queryBalanceRequest ::::::: {}", HelperUtil.toJson(queryBalanceRequest));
-        return callPost(url, queryBalanceRequest);
+    public Mono<SyncResponse> initiateQueryBalance() {
+        logger.info("Service queryBalance :::: ");
+        return callPost(darajaConfig.getQueryBalUrl(), getQueryBalanceRequest());
     }
 
     @Override
     public boolean queryBalResult(QueryBalanceResult queryBalanceResult) {
-        logger.info("Todo: persist - Service queryBalResult - queryBalanceResult ::: {}", queryBalanceResult);
+        logger.info("Todo: persist - Service queryBalResult ::: {}", queryBalanceResult);
 
         return false;
     }
 
     @Override
     public boolean queryBalQueueTimeout(QueryBalanceResult queryBalanceResult) {
-        logger.info("Todo: persist - Service queryBalQueueTimeout - queryBalanceResult ::: {}", queryBalanceResult);
+        logger.info("Todo: persist - Service queryBalQueueTimeout ::: {}", queryBalanceResult);
 
         return false;
     }
 
     @Override
-    public Mono<SyncResponse> reversal() {
-        String url = darajaConfig.getReversalUrl();
+    public Mono<SyncResponse> initiateReversal() {
         logger.info("Service reversal - :::");
-        return callPost(url, getReversalRequest());
+        return callPost(darajaConfig.getReversalUrl(), getReversalRequest());
     }
 
     @Override
@@ -231,26 +173,43 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public boolean remitTaxResult(RemitTaxResponse remitTaxResponse) {
-        logger.info("Todo: persist - Service remitTaxResult - ::: {}", remitTaxResponse);
+    public boolean remitTaxResult(RemitTaxResult remitTaxResult) {
+        logger.info("Todo: persist - Service remitTaxResult - ::: {}", remitTaxResult);
         return false;
     }
 
     @Override
-    public boolean remitTaxQueue(RemitTaxResponse remitTaxResponse) {
-        logger.info("Todo: persist - Service remitTaxQueue - ::: {}", remitTaxResponse);
+    public boolean remitTaxQueue(RemitTaxResult remitTaxResult) {
+        logger.info("Todo: persist - Service remitTaxQueue - ::: {}", remitTaxResult);
         return false;
     }
 
     @Override
-    public Mono<SyncResponse> remitTax() {
-        RemitTaxRequest remitTaxRequest = getRemitTaxRequest();
+    public Mono<SyncResponse> initiateRemitTax() {
         logger.info("Service remitTax - :::");
-        return callPost(darajaConfig.getRemitTaxUrl(), remitTaxRequest);
+        return callPost(darajaConfig.getRemitTaxUrl(), getRemitTaxRequest());
+    }
+
+    @Override
+    public boolean paymentRequestResult(PaymentRequestResult paymentRequestResult) {
+        logger.info("Todo: persist - Service paymentRequestResult - ::: {}", paymentRequestResult);
+        return false;
+    }
+
+    @Override
+    public boolean paymentRequestQueue(PaymentRequestResult paymentRequestResult) {
+        logger.info("Todo: persist - Service paymentRequestQueue - ::: {}", paymentRequestResult);
+        return false;
+    }
+
+    @Override
+    public Mono<SyncResponse> initiatePaymentRequest() {
+        logger.info("Service paymentRequestCall - :::");
+        return callPost(darajaConfig.getPaymentRequestUrl(), getPaymentRequestRequest());
     }
 
     private Mono<SyncResponse> callPost(String url, Object request) {
-        logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(objectMapper));
+        logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(request));
         return getValidAccessToken()
                 .flatMap(token ->
                         webClient.post()
@@ -269,6 +228,52 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 .doOnNext(response -> logger.info("callPost Success Response: {}", response))
                                 .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage(), error))
                 );
+    }
+
+    private PaymentRequestRequest getPaymentRequestRequest() {
+        PaymentRequestRequest paymentRequestRequest = new PaymentRequestRequest();
+        paymentRequestRequest.setInitiator(darajaConfig.getB2cInitiatorName());
+        paymentRequestRequest.setSecurityCredential(securityCredential);
+        paymentRequestRequest.setCommandID("BusinessPayBill");
+        paymentRequestRequest.setSenderIdentifierType("4");
+        paymentRequestRequest.setReceiverIdentifierType("4");
+        paymentRequestRequest.setAmount("1");
+        paymentRequestRequest.setPartyA("600983");
+        paymentRequestRequest.setPartyB("600000");
+        paymentRequestRequest.setAccountReference("353353");
+        paymentRequestRequest.setRequester("254708374149");
+        paymentRequestRequest.setRemarks("sample-remarks");
+        paymentRequestRequest.setQueueTimeOutURL(darajaConfig.getFullPaymentRequestQueueUrl());
+        paymentRequestRequest.setResultURL(darajaConfig.getFullPaymentRequestResultUrl());
+        return paymentRequestRequest;
+    }
+
+    private B2cRequest getB2cRequest(B2cRequestExternal b2CRequestExternal) {
+        B2cRequest b2CRequest = new B2cRequest();
+        logger.info("securityCredential encryptPassword :::: {}", securityCredential);
+        b2CRequest.setSecurityCredential(securityCredential);
+        b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
+        b2CRequest.setOriginatorConversationID(HelperUtil.generate());
+        b2CRequest.setQueueTimeOutURL(darajaConfig.getFullB2cCallbackUrl());
+        b2CRequest.setResultURL(darajaConfig.getFullB2cResultUrl());
+        b2CRequest.setPartyA(darajaConfig.getB2cPartyA());
+        /*Add B2cRequestExternal to B2CRequest*/
+        b2CRequest.setAmount(b2CRequestExternal.getAmount());
+        b2CRequest.setCommandID(b2CRequestExternal.getCommandID());
+        b2CRequest.setPartyB(b2CRequestExternal.getPartyB());
+        b2CRequest.setRemarks(b2CRequestExternal.getRemarks());
+        b2CRequest.setOccassion(b2CRequestExternal.getOccassion());
+        logger.info("B2CRequest just before submit :: {} ", HelperUtil.toJson(b2CRequest));
+        return b2CRequest;
+    }
+
+    private C2bRegisterUrl getC2bRegisterUrl() {
+        C2bRegisterUrl c2bRegister = new C2bRegisterUrl();
+        c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
+        c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
+        c2bRegister.setResponseType("Completed");
+        c2bRegister.setShortCode("107031");
+        return c2bRegister;
     }
 
     private RemitTaxRequest getRemitTaxRequest() {

@@ -4,25 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class RemitTaxRequest {
-
-	@JsonProperty("SenderIdentifierType")
-	private String senderIdentifierType;
+public class PaymentRequestRequest{
 
 	@JsonProperty("QueueTimeOutURL")
 	private String queueTimeOutURL;
 
-	@JsonProperty("Initiator")
-	private String initiator;
-
-	@JsonProperty("Remarks")
-	private String remarks;
-
 	@JsonProperty("Amount")
 	private String amount;
-
-	@JsonProperty("SecurityCredential")
-	private String securityCredential;
 
 	@JsonProperty("RecieverIdentifierType")
 	private String receiverIdentifierType;
@@ -33,12 +21,27 @@ public class RemitTaxRequest {
 	@JsonProperty("PartyB")
 	private String partyB;
 
+	@JsonProperty("ResultURL")
+	private String resultURL;
+
+	@JsonProperty("Requester")
+	private String requester;
+
+	@JsonProperty("SenderIdentifierType")
+	private String senderIdentifierType;
+
+	@JsonProperty("Initiator")
+	private String initiator;
+
+	@JsonProperty("Remarks")
+	private String remarks;
+
+	@JsonProperty("SecurityCredential")
+	private String securityCredential;
+
 	@JsonProperty("AccountReference")
 	private String accountReference;
 
 	@JsonProperty("CommandID")
 	private String commandID;
-
-	@JsonProperty("ResultURL")
-	private String resultURL;
 }

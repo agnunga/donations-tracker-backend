@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/momo")
@@ -109,7 +107,7 @@ public class DarajaController {
     @PostMapping(value = "/query-bal-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> queryBalCall() {
         logger.info("Just in queryBalCall :::: {}", "No req body");
-        service.queryBalance().subscribe();
+        service.initiateQueryBalance().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -152,23 +150,23 @@ public class DarajaController {
     @PostMapping(value = "/reversal-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> reversalCall() {
         logger.info("Just in reversalCall :::: ");
-        service.reversal().subscribe();
+        service.initiateReversal().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
     @PostMapping(value = "/remit-tax-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> remitTaxResult(@RequestBody RemitTaxResponse remitTaxResponse) {
-        logger.info("Just in remitTaxResult :::: {}", HelperUtil.toJson(remitTaxResponse));
-        boolean success = service.remitTaxResult(remitTaxResponse);
+    public ResponseEntity<AcknowledgeResponse> remitTaxResult(@RequestBody RemitTaxResult remitTaxResult) {
+        logger.info("Just in remitTaxResult :::: {}", HelperUtil.toJson(remitTaxResult));
+        boolean success = service.remitTaxResult(remitTaxResult);
         if (success)
             return ResponseEntity.ok(new AcknowledgeResponse("ok"));
         return ResponseEntity.ok(new AcknowledgeResponse("nok"));
     }
 
     @PostMapping(value = "/remit-tax-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> remitTaxQueue(@RequestBody RemitTaxResponse remitTaxResponse) {
-        logger.info("Just in remitTaxQueue :::: {}", HelperUtil.toJson(remitTaxResponse));
-        boolean success = service.remitTaxQueue(remitTaxResponse);
+    public ResponseEntity<AcknowledgeResponse> remitTaxQueue(@RequestBody RemitTaxResult remitTaxResult) {
+        logger.info("Just in remitTaxQueue :::: {}", HelperUtil.toJson(remitTaxResult));
+        boolean success = service.remitTaxQueue(remitTaxResult);
         if (success)
             return ResponseEntity.ok(new AcknowledgeResponse("ok"));
         return ResponseEntity.ok(new AcknowledgeResponse("nok"));
@@ -177,7 +175,32 @@ public class DarajaController {
     @PostMapping(value = "/remit-tax-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> remitTaxCall() {
         logger.info("Just in remitTaxCall :::: ");
-        service.remitTax().subscribe();
+        service.initiateRemitTax().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
+
+    @PostMapping(value = "/payment-request-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> paymentRequestResult(@RequestBody PaymentRequestResult paymentRequestResult) {
+        logger.info("Just in paymentRequestResult :::: {}", HelperUtil.toJson(paymentRequestResult));
+        boolean success = service.paymentRequestResult(paymentRequestResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/payment-request-queue", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> paymentRequestQueue(@RequestBody PaymentRequestResult paymentRequestResult) {
+        logger.info("Just in paymentRequestQueue :::: {}", HelperUtil.toJson(paymentRequestResult));
+        boolean success = service.paymentRequestQueue(paymentRequestResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/payment-request-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> paymentRequestCall() {
+        logger.info("Just in paymentRequestCall :::: ");
+        service.initiatePaymentRequest().subscribe();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
