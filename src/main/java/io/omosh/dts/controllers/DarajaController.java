@@ -204,4 +204,21 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
+
+    @PostMapping(value = "/express-callback", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> stkPushCallback(@RequestBody ExpressResult expressResult) {
+        logger.info("Just in expressResult :::: {}", HelperUtil.toJson(expressResult));
+        boolean success = service.stkPushCallback(expressResult);
+        if (success)
+            return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return ResponseEntity.ok(new AcknowledgeResponse("nok"));
+    }
+
+    @PostMapping(value = "/express-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcknowledgeResponse> initiateStkPushRequest() {
+        logger.info("Just in initiateStkPushRequest :::: ");
+        service.initiateStkPushRequest().subscribe();
+        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+    }
+
 }

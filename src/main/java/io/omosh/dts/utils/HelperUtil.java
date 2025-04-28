@@ -20,6 +20,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 public class HelperUtil {
@@ -104,6 +106,15 @@ public class HelperUtil {
         String b64String = Base64.getEncoder().encodeToString(secretKey.getBytes());
         // System.out.println(b64String);
         return b64String;
+    }
+
+    public static String formatDateTime(LocalDateTime localDateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return localDateTime.format(formatter);
+    }
+
+    public static String formattedCurrentDateTime() {
+        return formatDateTime(LocalDateTime.now());
     }
 
     public static String toJson(Object object) {

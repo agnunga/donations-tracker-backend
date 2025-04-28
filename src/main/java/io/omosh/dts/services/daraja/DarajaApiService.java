@@ -50,6 +50,12 @@ public interface DarajaApiService {
 
     Mono<SyncResponse> initiatePaymentRequest();
 
+    /*M-Pesa Express callback*/
+    boolean stkPushCallback(ExpressResult expressResult);
+
+    /*M-Pesa Express Simulate*/
+    Mono<ExpressResponse> initiateStkPushRequest();
+
     /*Customer To Business (C2B)*/
     /*
     RegisterUrlResponse registerUrl();

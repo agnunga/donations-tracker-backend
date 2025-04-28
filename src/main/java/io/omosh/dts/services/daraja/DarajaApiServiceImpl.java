@@ -85,21 +85,21 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     public Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal) {
         logger.info("Service performB2CTransaction :::");
         B2cRequest b2CRequest = getB2cRequest(b2CRequestExternal);
-        return callPost(darajaConfig.getB2cUrl(), b2CRequest);
+        return callPost(darajaConfig.getB2cUrl(), b2CRequest, SyncResponse.class);
     }
 
     @Override
     public Mono<SyncResponse> c2bRegisterUrl() {
         logger.info("Service c2bRegisterUrl :::");
         C2bRegisterUrl c2bRegister = getC2bRegisterUrl();
-        return callPost(darajaConfig.getC2bRegisterUrlUrl(), c2bRegister);
+        return callPost(darajaConfig.getC2bRegisterUrlUrl(), c2bRegister, SyncResponse.class);
     }
 
     @Override
     public Mono<SyncResponse> c2bSimulate() {
         logger.info("Service c2bSimulate :::");
         C2bSimulate c2BSimulate = getC2bSimulate();
-        return callPost(darajaConfig.getC2bSimulateUrl(), c2BSimulate);
+        return callPost(darajaConfig.getC2bSimulateUrl(), c2BSimulate, SyncResponse.class);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> queryTransaction() {
         logger.info("Service queryTransaction :::: ");
-        return callPost(darajaConfig.getQueryTransactionUrl(), getTransactionStatusRequest());
+        return callPost(darajaConfig.getQueryTransactionUrl(), getTransactionStatusRequest(), SyncResponse.class);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> initiateQueryBalance() {
         logger.info("Service queryBalance :::: ");
-        return callPost(darajaConfig.getQueryBalUrl(), getQueryBalanceRequest());
+        return callPost(darajaConfig.getQueryBalUrl(), getQueryBalanceRequest(), SyncResponse.class);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> initiateReversal() {
         logger.info("Service reversal - :::");
-        return callPost(darajaConfig.getReversalUrl(), getReversalRequest());
+        return callPost(darajaConfig.getReversalUrl(), getReversalRequest(),SyncResponse.class);
     }
 
     @Override
@@ -187,7 +187,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> initiateRemitTax() {
         logger.info("Service remitTax - :::");
-        return callPost(darajaConfig.getRemitTaxUrl(), getRemitTaxRequest());
+        return callPost(darajaConfig.getRemitTaxUrl(), getRemitTaxRequest(), SyncResponse.class);
     }
 
     @Override
@@ -206,10 +206,24 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> initiatePaymentRequest() {
         logger.info("Service paymentRequestCall - :::");
-        return callPost(darajaConfig.getPaymentRequestUrl(), getPaymentRequestRequest());
+        return callPost(darajaConfig.getPaymentRequestUrl(), getPaymentRequestRequest(), SyncResponse.class);
     }
 
-    private Mono<SyncResponse> callPost(String url, Object request) {
+    /*M-Pesa Express callback*/
+    @Override
+    public boolean stkPushCallback(ExpressResult expressResult) {
+        logger.info("Todo: persist - Service stkPushCallback - ::: {}", expressResult);
+        return false;
+    }
+
+    /*M-Pesa Express Simulate*/
+    @Override
+    public Mono<ExpressResponse> initiateStkPushRequest() {
+        logger.info("Service initiateStkPushRequest - :::");
+        return callPost(darajaConfig.getExpressUrl(), getExpressRequest(), ExpressResponse.class);
+    }
+
+    private <T> Mono<T> callPost(String url, Object request, Class<T> responseType) {
         logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(request));
         return getValidAccessToken()
                 .flatMap(token ->
@@ -225,10 +239,26 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                         return Mono.error(new RuntimeException("callPost failed with status: " + clientResponse.statusCode()));
                                     });
                                 })
-                                .bodyToMono(SyncResponse.class)
+                                .bodyToMono(responseType)
                                 .doOnNext(response -> logger.info("callPost Success Response: {}", response))
                                 .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage(), error))
                 );
+    }
+
+    private ExpressRequest getExpressRequest() {
+        ExpressRequest expressRequest = new ExpressRequest();
+        expressRequest.setBusinessShortCode(darajaConfig.getC2bShortCode());
+        expressRequest.setPassword(securityCredential); /* :todo Password = base64.encode(Shortcode+Passkey+Timestamp) */
+        expressRequest.setTimestamp(HelperUtil.formattedCurrentDateTime());
+        expressRequest.setTransactionType("CustomerPayBillOnline");
+        expressRequest.setAmount("1");
+        expressRequest.setPartyA("254712929181");
+        expressRequest.setPartyB(darajaConfig.getC2bShortCode());
+        expressRequest.setPhoneNumber("254712929181");
+        expressRequest.setCallBackURL(darajaConfig.getB2cCallbackUrl());
+        expressRequest.setAccountReference("test");
+        expressRequest.setTransactionDesc("test");
+        return expressRequest;
     }
 
     private PaymentRequestRequest getPaymentRequestRequest() {

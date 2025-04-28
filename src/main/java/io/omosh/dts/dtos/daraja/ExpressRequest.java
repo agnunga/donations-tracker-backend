@@ -10,19 +10,19 @@ public class ExpressRequest{
 	private String transactionType;
 
 	@JsonProperty("Amount")
-	private int amount;
+	private String amount;
 
 	@JsonProperty("CallBackURL")
 	private String callBackURL;
 
 	@JsonProperty("PhoneNumber")
-	private long phoneNumber;
+	private String phoneNumber;
 
 	@JsonProperty("PartyA")
-	private long partyA;
+	private String partyA;
 
 	@JsonProperty("PartyB")
-	private int partyB;
+	private String partyB;
 
 	@JsonProperty("AccountReference")
 	private String accountReference;
@@ -31,7 +31,7 @@ public class ExpressRequest{
 	private String transactionDesc;
 
 	@JsonProperty("BusinessShortCode")
-	private int businessShortCode;
+	private String businessShortCode;
 
 	@JsonProperty("Timestamp")
 	private String timestamp;
