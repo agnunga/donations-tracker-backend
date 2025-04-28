@@ -34,15 +34,15 @@ public class DarajaController {
     }
 
     @PostMapping(value = "/b2c-callback", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> paymentCallback(@RequestBody B2cResponse b2CResponse) {
-        logger.info("Just in paymentCallback Body: {}", HelperUtil.toJson(b2CResponse));
-        service.getB2CTransactionResults(b2CResponse);
+    public ResponseEntity<AcknowledgeResponse> paymentCallback(@RequestBody B2cResult b2CResult) {
+        logger.info("Just in paymentCallback Body: {}", HelperUtil.toJson(b2CResult));
+        service.getB2CTransactionResults(b2CResult);
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/b2c-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2cResponse b2CResponse) {
-        logger.info("Just in paymentResult Body: {}", HelperUtil.toJson(b2CResponse));
+    public ResponseEntity<AcknowledgeResponse> paymentResult(@RequestBody B2cResult b2CResult) {
+        logger.info("Just in paymentResult Body: {}", HelperUtil.toJson(b2CResult));
 
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }

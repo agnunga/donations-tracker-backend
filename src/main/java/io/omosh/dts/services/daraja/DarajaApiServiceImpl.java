@@ -76,8 +76,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> getB2CTransactionResults(B2cResponse b2CResponse) {
-        logger.info("b2CResponse ::: {}", HelperUtil.toJson(b2CResponse));
+    public Mono<SyncResponse> getB2CTransactionResults(B2cResult b2CResult) {
+        logger.info("b2CResult ::: {}", HelperUtil.toJson(b2CResult));
         return null;
     }
 
@@ -202,6 +202,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return false;
     }
 
+    /*Business Pay Bill - paymentrequest*/
     @Override
     public Mono<SyncResponse> initiatePaymentRequest() {
         logger.info("Service paymentRequestCall - :::");
@@ -243,8 +244,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         paymentRequestRequest.setAccountReference("353353");
         paymentRequestRequest.setRequester("254708374149");
         paymentRequestRequest.setRemarks("sample-remarks");
-        paymentRequestRequest.setQueueTimeOutURL(darajaConfig.getFullPaymentRequestQueueUrl());
-        paymentRequestRequest.setResultURL(darajaConfig.getFullPaymentRequestResultUrl());
+        paymentRequestRequest.setQueueTimeOutURL(darajaConfig.getPaymentRequestQueueUrl());
+        paymentRequestRequest.setResultURL(darajaConfig.getPaymentRequestResultUrl());
         return paymentRequestRequest;
     }
 
@@ -254,8 +255,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         b2CRequest.setSecurityCredential(securityCredential);
         b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
         b2CRequest.setOriginatorConversationID(HelperUtil.generate());
-        b2CRequest.setQueueTimeOutURL(darajaConfig.getFullB2cCallbackUrl());
-        b2CRequest.setResultURL(darajaConfig.getFullB2cResultUrl());
+        b2CRequest.setQueueTimeOutURL(darajaConfig.getB2cCallbackUrl());
+        b2CRequest.setResultURL(darajaConfig.getB2cResultUrl());
         b2CRequest.setPartyA(darajaConfig.getB2cPartyA());
         /*Add B2cRequestExternal to B2CRequest*/
         b2CRequest.setAmount(b2CRequestExternal.getAmount());
@@ -269,8 +270,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     private C2bRegisterUrl getC2bRegisterUrl() {
         C2bRegisterUrl c2bRegister = new C2bRegisterUrl();
-        c2bRegister.setConfirmationURL(darajaConfig.getFullC2bConfirmationUrl());
-        c2bRegister.setValidationURL(darajaConfig.getFullC2bValidationUrl());
+        c2bRegister.setConfirmationURL(darajaConfig.getC2bConfirmationUrl());
+        c2bRegister.setValidationURL(darajaConfig.getC2bValidationUrl());
         c2bRegister.setResponseType("Completed");
         c2bRegister.setShortCode("107031");
         return c2bRegister;
@@ -288,8 +289,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         remitTaxRequest.setPartyB("572572");
         remitTaxRequest.setAccountReference("353353");
         remitTaxRequest.setRemarks("sample-remarks");
-        remitTaxRequest.setQueueTimeOutURL(darajaConfig.getFullRemitTaxQueueUrl());
-        remitTaxRequest.setResultURL(darajaConfig.getFullRemitTaxResultUrl());
+        remitTaxRequest.setQueueTimeOutURL(darajaConfig.getRemitTaxQueueUrl());
+        remitTaxRequest.setResultURL(darajaConfig.getRemitTaxResultUrl());
         return remitTaxRequest;
     }
 
@@ -312,8 +313,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         txnStatusRequest.setOriginatorConversationID("AG_20250425_20101f0bf59d8c36456a");
         txnStatusRequest.setPartyA("600987");
         txnStatusRequest.setIdentifierType("2");
-        txnStatusRequest.setResultURL(darajaConfig.getFullQueryTransactionResult());
-        txnStatusRequest.setQueueTimeOutURL(darajaConfig.getFullQueryTransactionQueueUrl());
+        txnStatusRequest.setResultURL(darajaConfig.getQueryTransactionResult());
+        txnStatusRequest.setQueueTimeOutURL(darajaConfig.getQueryTransactionQueueUrl());
         txnStatusRequest.setRemarks("sample remarks");
         txnStatusRequest.setOccasion(null);
         return txnStatusRequest;
@@ -328,8 +329,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         reversalRequest.setAmount("1");
         reversalRequest.setReceiverParty("600984");
         reversalRequest.setRecieverIdentifierType("11");
-        reversalRequest.setResultURL(darajaConfig.getFullReversalResultUrl());
-        reversalRequest.setQueueTimeOutURL(darajaConfig.getFullReversalQueueUrl());
+        reversalRequest.setResultURL(darajaConfig.getReversalResultUrl());
+        reversalRequest.setQueueTimeOutURL(darajaConfig.getReversalQueueUrl());
         reversalRequest.setRemarks("test-test");
         reversalRequest.setOccasion("christmas");
         return reversalRequest;
@@ -343,8 +344,8 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         queryBalanceRequest.setPartyA("600978");
         queryBalanceRequest.setIdentifierType("2");
         queryBalanceRequest.setRemarks("getbal");
-        queryBalanceRequest.setQueueTimeOutURL(darajaConfig.getFullQueryBalQueueUrl());
-        queryBalanceRequest.setResultURL(darajaConfig.getFullQueryBalResultUrl());
+        queryBalanceRequest.setQueueTimeOutURL(darajaConfig.getQueryBalQueueUrl());
+        queryBalanceRequest.setResultURL(darajaConfig.getQueryBalResultUrl());
         return queryBalanceRequest;
     }
 
@@ -355,16 +356,16 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         System.out.println("auth-url: " + darajaConfig.getAuthUrl());
         System.out.println("b2c-url: " + darajaConfig.getB2cUrl());
         System.out.println("base-url: " + darajaConfig.getBaseUrl());
-        System.out.println("callback-url: " + darajaConfig.getFullB2cCallbackUrl());
-        System.out.println("initiate-b2c-url: " + darajaConfig.getFullB2cInitiateUrl());
+        System.out.println("callback-url: " + darajaConfig.getB2cCallbackUrl());
+        System.out.println("initiate-b2c-url: " + darajaConfig.getB2cInitiateUrl());
         System.out.println("b2c-party-a: " + darajaConfig.getB2cPartyA());
         System.out.println("b2c-initiator-name: " + darajaConfig.getB2cInitiatorName());
         System.out.println("b2c-initiator-password: " + darajaConfig.getB2cInitiatorPassword());
         System.out.println("c2b-short-code: " + darajaConfig.getC2bShortCode());
         System.out.println("c2b-register-url: " + darajaConfig.getC2bRegisterUrlUrl());
-        System.out.println("c2b-register-call-url: " + darajaConfig.getFullC2bRegisterCallUrl());
-        System.out.println("c2b-confirmation-url: " + darajaConfig.getFullC2bConfirmationUrl());
-        System.out.println("c2b-validation-url: " + darajaConfig.getFullC2bValidationUrl());
+        System.out.println("c2b-register-call-url: " + darajaConfig.getC2bRegisterCallUrl());
+        System.out.println("c2b-confirmation-url: " + darajaConfig.getC2bConfirmationUrl());
+        System.out.println("c2b-validation-url: " + darajaConfig.getC2bValidationUrl());
         System.out.println("c2b-simulation-url: " + darajaConfig.getC2bSimulateUrl());
         System.out.println("query-balance-url: " + darajaConfig.getQueryBalUrl());
     }

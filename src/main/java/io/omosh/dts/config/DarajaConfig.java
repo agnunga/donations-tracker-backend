@@ -46,89 +46,12 @@ public class DarajaConfig {
     private String paymentRequestQueueUrl;
     private String paymentRequestResultUrl;
     private String paymentRequestCallUrl;
-
-    public String getFullB2cInitiateUrl() {
-        return getBaseUrl() + getB2cInitiateUrl();
-    }
-
-    public String getFullB2cCallbackUrl() {
-        return getBaseUrl() + getB2cCallbackUrl();
-    }
-
-    public String getFullB2cResultUrl() {
-        return getBaseUrl() + getB2cResultUrl();
-    }
-
-    public String getFullC2bConfirmationUrl() {
-        return getBaseUrl() + getC2bConfirmationUrl();
-    }
-
-    public String getFullC2bValidationUrl() {
-        return getBaseUrl() + getC2bValidationUrl();
-    }
-
-    public String getFullC2bRegisterCallUrl() {
-        return getBaseUrl() + getC2bRegisterCallUrl();
-    }
-
-    public String getFullQueryTransactionCallUrl() {
-        return getBaseUrl() + getQueryTransactionCallUrl();
-    }
-
-    public String getFullQueryTransactionQueueUrl() {
-        return getBaseUrl() + getQueryTransactionQueueUrl();
-    }
-
-    public String getFullQueryTransactionResult() {
-        return getBaseUrl() + getQueryTransactionResult();
-    }
-
-    public String getFullQueryBalQueueUrl() {
-        return getBaseUrl() + getQueryBalQueueUrl();
-    }
-
-    public String getFullQueryBalResultUrl() {
-        return getBaseUrl() + getQueryBalResultUrl();
-    }
-
-    public String getFullQueryBalCallURL() {
-        return getBaseUrl() + getQueryBalCallUrl();
-    }
-
-    public String getFullReversalQueueUrl() {
-        return getBaseUrl() + getReversalQueueUrl();
-    }
-
-    public String getFullReversalResultUrl() {
-        return getBaseUrl() + getReversalResultUrl();
-    }
-
-    public String getFullReversalCallURL() {
-        return getBaseUrl() + getReversalCallUrl();
-    }
-
-    public String getFullRemitTaxQueueUrl() {
-        return getBaseUrl() + getRemitTaxQueueUrl();
-    }
-
-    public String getFullRemitTaxResultUrl() {
-        return getBaseUrl() + getRemitTaxResultUrl();
-    }
-
-    public String getFullRemitTaxCallURL() {
-        return getBaseUrl() + getRemitTaxCallUrl();
-    }
-
-    public String getFullPaymentRequestQueueUrl() {
-        return getBaseUrl() + getPaymentRequestQueueUrl();
-    }
-
-    public String getFullPaymentRequestResultUrl() {
-        return getBaseUrl() + getPaymentRequestResultUrl();
-    }
-
-    public String getFullPaymentRequestCallURL() {
-        return getBaseUrl() + getPaymentRequestCallUrl();
-    }
+    private String paymentBuyGoodsUrl;
+    private String paymentBuyGoodsQueueUrl;
+    private String paymentBuyGoodsResultUrl;
+    private String paymentBuyGoodsCallUrl;
+    private String expressUrl;
+    private String expressResultUrl;
+    private String expressCallUrl;
 
 }

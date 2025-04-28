@@ -8,7 +8,7 @@ public interface DarajaApiService {
     /*Authorization*/
     Mono<AccessTokenResponse> getAccessToken();
 
-    Mono<SyncResponse> getB2CTransactionResults(B2cResponse b2CResponse);
+    Mono<SyncResponse> getB2CTransactionResults(B2cResult b2CResult);
 
     Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal);
 
