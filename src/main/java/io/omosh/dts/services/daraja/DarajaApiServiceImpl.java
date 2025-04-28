@@ -155,7 +155,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     @Override
     public Mono<SyncResponse> initiateReversal() {
         logger.info("Service reversal - :::");
-        return callPost(darajaConfig.getReversalUrl(), getReversalRequest(),SyncResponse.class);
+        return callPost(darajaConfig.getReversalUrl(), getReversalRequest(), SyncResponse.class);
     }
 
     @Override
@@ -246,16 +246,18 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     private ExpressRequest getExpressRequest() {
+        String timestamp = HelperUtil.formattedCurrentDateTime();
+        String password = HelperUtil.toBase64("174379" + "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919" + timestamp);
         ExpressRequest expressRequest = new ExpressRequest();
-        expressRequest.setBusinessShortCode(darajaConfig.getC2bShortCode());
-        expressRequest.setPassword(securityCredential); /* :todo Password = base64.encode(Shortcode+Passkey+Timestamp) */
-        expressRequest.setTimestamp(HelperUtil.formattedCurrentDateTime());
+        expressRequest.setBusinessShortCode("174379");
+        expressRequest.setPassword(password); /* :todo Password = base64.encode(Shortcode+Passkey+Timestamp) */
+        expressRequest.setTimestamp(timestamp);
         expressRequest.setTransactionType("CustomerPayBillOnline");
         expressRequest.setAmount("1");
-        expressRequest.setPartyA("254712929181");
-        expressRequest.setPartyB(darajaConfig.getC2bShortCode());
-        expressRequest.setPhoneNumber("254712929181");
-        expressRequest.setCallBackURL(darajaConfig.getB2cCallbackUrl());
+        expressRequest.setPartyA("254708374149");
+        expressRequest.setPartyB("174379");
+        expressRequest.setPhoneNumber("254708374149");
+        expressRequest.setCallBackURL(darajaConfig.getExpressResultUrl());
         expressRequest.setAccountReference("test");
         expressRequest.setTransactionDesc("test");
         return expressRequest;

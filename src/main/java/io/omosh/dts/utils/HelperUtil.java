@@ -74,6 +74,7 @@ public class HelperUtil {
         // Return Base64-encoded string
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
+
     public static String getSecurityCredentials2(String initiatorPassword) {
         try {
             // Load certificate from resources
@@ -102,10 +103,8 @@ public class HelperUtil {
         }
     }
 
-    public static String toBase64(String secretKey) throws Exception {
-        String b64String = Base64.getEncoder().encodeToString(secretKey.getBytes());
-        // System.out.println(b64String);
-        return b64String;
+    public static String toBase64(String secretKey) {
+        return Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
     public static String formatDateTime(LocalDateTime localDateTime) {

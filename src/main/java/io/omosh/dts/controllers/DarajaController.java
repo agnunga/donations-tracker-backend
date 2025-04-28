@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/momo")
@@ -205,7 +206,7 @@ public class DarajaController {
     }
 
 
-    @PostMapping(value = "/express-callback", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/express-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> stkPushCallback(@RequestBody ExpressResult expressResult) {
         logger.info("Just in expressResult :::: {}", HelperUtil.toJson(expressResult));
         boolean success = service.stkPushCallback(expressResult);
@@ -215,10 +216,11 @@ public class DarajaController {
     }
 
     @PostMapping(value = "/express-call", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgeResponse> initiateStkPushRequest() {
+    public Mono<ResponseEntity<ExpressResponse>> initiateStkPushRequest() {
         logger.info("Just in initiateStkPushRequest :::: ");
-        service.initiateStkPushRequest().subscribe();
-        return ResponseEntity.ok(new AcknowledgeResponse("ok"));
+        return service.initiateStkPushRequest()
+                .map(result -> ResponseEntity.ok(result))
+                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
+                        .body(new ExpressResponse(error.getMessage())))); // assume ExpressResponse has a constructor
     }
-
 }
