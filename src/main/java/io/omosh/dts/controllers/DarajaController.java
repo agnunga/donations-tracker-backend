@@ -218,7 +218,7 @@ public class DarajaController {
     public Mono<ResponseEntity<ExpressResponse>> initiateStkPushRequest() {
         logger.info("Just in initiateStkPushRequest :::: ");
         return service.initiateStkPushRequest()
-                .map(result -> ResponseEntity.ok(result))
+                .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
                         .body(new ExpressResponse(error.getMessage())))); // assume ExpressResponse has a constructor
     }
@@ -227,7 +227,7 @@ public class DarajaController {
     public Mono<ResponseEntity<ExpressQueryResponse>> initiateStkPushQuery() {
         logger.info("Just in initiateStkPushQuery :::: ");
         return service.initiateStkPushQuery()
-                .map(result -> ResponseEntity.ok(result))
+                .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
                         .body(new ExpressQueryResponse(error.getMessage())))); // assume ExpressResponse has a constructor
     }
@@ -236,7 +236,7 @@ public class DarajaController {
     public Mono<ResponseEntity<GenerateQrResponse>> initiateGenerateQR() {
         logger.info("Just in initiateGenerateQR :::: ");
         return service.initiateGenerateQR()
-                .map(result -> ResponseEntity.ok(result))
+                .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
                         .body(new GenerateQrResponse(error.getMessage())))); // assume ExpressResponse has a constructor
     }

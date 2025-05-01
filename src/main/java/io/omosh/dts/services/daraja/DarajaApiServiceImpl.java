@@ -202,7 +202,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return false;
     }
 
-    /*Business Pay Bill - paymentrequest*/
+    /*Business Pay Bill - payment request*/
     @Override
     public Mono<SyncResponse> initiatePaymentRequest() {
         logger.info("Service paymentRequestCall - :::");
@@ -245,23 +245,24 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                                 .bodyValue(request)
                                 .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> {
-                                    return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                                        logger.error("callPost Error Response: {}", errorBody);
-                                        return Mono.error(new RuntimeException("callPost failed with status: " + clientResponse.statusCode()));
-                                    });
-                                })
+                                .onStatus(HttpStatusCode::isError, clientResponse -> clientResponse.bodyToMono(String.class)
+                                        .flatMap(errorBody -> {
+                                            logger.error("callPost Error Response: {}", errorBody);
+                                            return Mono.error(new RuntimeException("callPost failed with status: " + clientResponse.statusCode()));
+                                        }))
                                 .bodyToMono(responseType)
-                                .doOnNext(response -> logger.info("callPost Success Response: {}", response))
-                                .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage(), error))
+                                .doOnNext(response -> logger.info("callPost Success Response: {}", HelperUtil.toJson(response)))
+                                .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage()/*, error*/))
                 );
     }
 
     private static ExpressQueryRequest getExpressQueryRequest() {
         ExpressQueryRequest expressQueryRequest = new ExpressQueryRequest();
+        String timestamp = HelperUtil.formattedCurrentDateTime();
+        String password = HelperUtil.toBase64("174379" + "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919" + timestamp);
         expressQueryRequest.setBusinessShortCode("174379");
-        expressQueryRequest.setPassword("MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjUwNTAxMTYyNjQ1");
-        expressQueryRequest.setTimestamp(HelperUtil.formattedCurrentDateTime());
+        expressQueryRequest.setPassword(password);
+        expressQueryRequest.setTimestamp(timestamp);
         expressQueryRequest.setCheckoutRequestID("ws_CO_260520211133524545");
         return expressQueryRequest;
     }
@@ -282,7 +283,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         String password = HelperUtil.toBase64("174379" + "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919" + timestamp);
         ExpressRequest expressRequest = new ExpressRequest();
         expressRequest.setBusinessShortCode("174379");
-        expressRequest.setPassword(password); /* :todo Password = base64.encode(Shortcode+Passkey+Timestamp) */
+        expressRequest.setPassword(password);
         expressRequest.setTimestamp(timestamp);
         expressRequest.setTransactionType("CustomerPayBillOnline");
         expressRequest.setAmount("1");
@@ -407,7 +408,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         queryBalanceRequest.setCommandID("AccountBalance");
         queryBalanceRequest.setPartyA("600978");
         queryBalanceRequest.setIdentifierType("2");
-        queryBalanceRequest.setRemarks("getbal");
+        queryBalanceRequest.setRemarks("get-bal");
         queryBalanceRequest.setQueueTimeOutURL(darajaConfig.getQueryBalQueueUrl());
         queryBalanceRequest.setResultURL(darajaConfig.getQueryBalResultUrl());
         return queryBalanceRequest;

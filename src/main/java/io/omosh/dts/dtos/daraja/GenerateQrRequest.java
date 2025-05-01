@@ -18,7 +18,7 @@ public class GenerateQrRequest{
 	@JsonProperty("Amount")
 	private String amount;
 
-	@JsonProperty("ExpressTrxCode")
+	@JsonProperty("TrxCode")
 	private String trxCode;
 
 	@JsonProperty("CPI")
