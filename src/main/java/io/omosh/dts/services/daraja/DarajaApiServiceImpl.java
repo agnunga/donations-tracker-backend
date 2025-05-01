@@ -223,6 +223,18 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return callPost(darajaConfig.getExpressUrl(), getExpressRequest(), ExpressResponse.class);
     }
 
+    @Override
+    public Mono<ExpressQueryResponse> initiateStkPushQuery() {
+        logger.info("Service initiateStkPushQuery - :::");
+        return callPost(darajaConfig.getExpressQueryUrl(), getExpressQueryRequest(), ExpressQueryResponse.class);
+    }
+
+    @Override
+    public Mono<GenerateQrResponse> initiateGenerateQR() {
+        logger.info("Service initiateGenerateQR - :::");
+        return callPost(darajaConfig.getGenerateQrUrl(), getGenerateQrRequest(), GenerateQrResponse.class);
+    }
+
     private <T> Mono<T> callPost(String url, Object request, Class<T> responseType) {
         logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(request));
         return getValidAccessToken()
@@ -243,6 +255,26 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 .doOnNext(response -> logger.info("callPost Success Response: {}", response))
                                 .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage(), error))
                 );
+    }
+
+    private static ExpressQueryRequest getExpressQueryRequest() {
+        ExpressQueryRequest expressQueryRequest = new ExpressQueryRequest();
+        expressQueryRequest.setBusinessShortCode("174379");
+        expressQueryRequest.setPassword("MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjUwNTAxMTYyNjQ1");
+        expressQueryRequest.setTimestamp(HelperUtil.formattedCurrentDateTime());
+        expressQueryRequest.setCheckoutRequestID("ws_CO_260520211133524545");
+        return expressQueryRequest;
+    }
+
+    private static GenerateQrRequest getGenerateQrRequest() {
+        GenerateQrRequest generateQrRequest = new GenerateQrRequest();
+        generateQrRequest.setMerchantName("TEST-Supermarket");
+        generateQrRequest.setRefNo("Invoice Test");
+        generateQrRequest.setAmount("1");
+        generateQrRequest.setTrxCode(ExpressTrxCode.BG.name());
+        generateQrRequest.setCPI("174379");
+        generateQrRequest.setSize("300");
+        return generateQrRequest;
     }
 
     private ExpressRequest getExpressRequest() {

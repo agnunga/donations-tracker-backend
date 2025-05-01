@@ -53,5 +53,9 @@ public class DarajaConfig {
     private String expressUrl;
     private String expressResultUrl;
     private String expressCallUrl;
+    private String generateQrUrl;
+    private String generateQrCallUrl;
+    private String expressQueryUrl;
+    private String expressQueryCallUrl;
 
 }

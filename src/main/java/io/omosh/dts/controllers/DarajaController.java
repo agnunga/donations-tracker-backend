@@ -205,7 +205,6 @@ public class DarajaController {
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
-
     @PostMapping(value = "/express-result", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> stkPushCallback(@RequestBody ExpressResult expressResult) {
         logger.info("Just in expressResult :::: {}", HelperUtil.toJson(expressResult));
@@ -222,5 +221,23 @@ public class DarajaController {
                 .map(result -> ResponseEntity.ok(result))
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
                         .body(new ExpressResponse(error.getMessage())))); // assume ExpressResponse has a constructor
+    }
+
+    @PostMapping(value = "/express-query-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<ExpressQueryResponse>> initiateStkPushQuery() {
+        logger.info("Just in initiateStkPushQuery :::: ");
+        return service.initiateStkPushQuery()
+                .map(result -> ResponseEntity.ok(result))
+                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
+                        .body(new ExpressQueryResponse(error.getMessage())))); // assume ExpressResponse has a constructor
+    }
+
+    @PostMapping(value = "/generate-qr-call", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<GenerateQrResponse>> initiateGenerateQR() {
+        logger.info("Just in initiateGenerateQR :::: ");
+        return service.initiateGenerateQR()
+                .map(result -> ResponseEntity.ok(result))
+                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
+                        .body(new GenerateQrResponse(error.getMessage())))); // assume ExpressResponse has a constructor
     }
 }

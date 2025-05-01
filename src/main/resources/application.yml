@@ -88,3 +88,11 @@ daraja:
     express-url: https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest
     express-result-url: ${daraja.configs.base-url}/momo/express-result
     express-call-url: ${daraja.configs.base-url}/momo/express-call
+
+    #M-Pesa Express Query
+    express-query-url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+    express-query-call-url: ${daraja.configs.base-url}/momo/express-query-call
+
+    #Dynamic QR
+    generate-qr-url: https://sandbox.safaricom.co.ke/mpesa/qrcode/v1/generate
+    generate-qr-call-url: ${daraja.configs.base-url}/momo/generate-qr-call

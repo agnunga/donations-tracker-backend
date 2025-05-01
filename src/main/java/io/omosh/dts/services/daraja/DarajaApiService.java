@@ -3,6 +3,8 @@ package io.omosh.dts.services.daraja;
 import io.omosh.dts.dtos.daraja.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 public interface DarajaApiService {
 
     /*Authorization*/
@@ -55,6 +57,11 @@ public interface DarajaApiService {
 
     /*M-Pesa Express Simulate*/
     Mono<ExpressResponse> initiateStkPushRequest();
+
+    /*M-Pesa Express Query*/
+    Mono<ExpressQueryResponse> initiateStkPushQuery();
+
+    Mono<GenerateQrResponse> initiateGenerateQR();
 
     /*Customer To Business (C2B)*/
     /*
