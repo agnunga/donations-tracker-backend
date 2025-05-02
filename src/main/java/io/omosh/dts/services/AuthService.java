@@ -1,4 +1,5 @@
 package io.omosh.dts.services;
+import io.omosh.dts.dtos.JwtAccessToken;
 import io.omosh.dts.utils.JwtUtil;
 import io.omosh.dts.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +19,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Optional<String> login(String username, String password) {
+    public Optional<JwtAccessToken> login(String username, String password) {
         return userRepository.findByUsername(username)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(user -> JwtUtil.generateToken(username, new HashMap<>()));
@@ -27,12 +28,9 @@ public class AuthService {
     public boolean validateToken(String token) {
         Optional<String> usernameOpt = JwtUtil.extractUsername(token);
 
-        if (usernameOpt.isEmpty()) {
-            return false;
-        }
-
-        return userRepository.findByUsername(usernameOpt.get())
+        return usernameOpt.map(s -> userRepository.findByUsername(s)
                 .map(user -> JwtUtil.isTokenValid(token, user.getUsername()))
-                .orElse(false);
+                .orElse(false)).orElse(false);
+
     }
 }

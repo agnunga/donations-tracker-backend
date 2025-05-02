@@ -3,6 +3,7 @@ package io.omosh.dts.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import io.omosh.dts.dtos.JwtAccessToken;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -13,19 +14,20 @@ import java.util.Optional;
 public class JwtUtil {
     private static final String SECRET_KEY = "0N9p18iTq0EKfGcgoyD9KCKDbZUqgxbFAlxs4CPyK0A="; // 32+ chars
     private static final SecretKey SIGNING_KEY = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
-    private static final long EXPIRATION_TIME_MS = 3600000; // 1 hour
+    private static final long EXPIRATION_TIME = 3600 - 1; // 1 hour
 
     /**
      * Generates a JWT token.
      */
-    public static String generateToken(String username, Map<String, Object> extraClaims) {
-        return Jwts.builder()
+    public static JwtAccessToken generateToken(String username, Map<String, Object> extraClaims) {
+        String token = Jwts.builder()
                 .claims(extraClaims)
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME * 1000))
                 .signWith(SIGNING_KEY)
                 .compact();
+        return new JwtAccessToken(token, EXPIRATION_TIME);
     }
 
     /**

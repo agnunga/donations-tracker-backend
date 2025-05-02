@@ -9,7 +9,7 @@ public class JwtAccessToken {
     @JsonProperty("token")
     private String token;
 
-    @JsonProperty("expires_in")
+    @JsonProperty("expires-in")
     private long expiresIn;
 
     public JwtAccessToken() {
