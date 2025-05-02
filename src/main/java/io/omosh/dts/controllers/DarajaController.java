@@ -220,7 +220,7 @@ public class DarajaController {
         return service.initiateStkPushRequest()
                 .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new ExpressResponse(error.getMessage())))); // assume ExpressResponse has a constructor
+                        .body(new ExpressResponse(error.getMessage()))));
     }
 
     @PostMapping(value = "/express-query-call", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -229,7 +229,7 @@ public class DarajaController {
         return service.initiateStkPushQuery()
                 .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new ExpressQueryResponse(error.getMessage())))); // assume ExpressResponse has a constructor
+                        .body(new ExpressQueryResponse(error.getMessage()))));
     }
 
     @PostMapping(value = "/generate-qr-call", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -238,6 +238,6 @@ public class DarajaController {
         return service.initiateGenerateQR()
                 .map(ResponseEntity::ok)
                 .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new GenerateQrResponse(error.getMessage())))); // assume ExpressResponse has a constructor
+                        .body(new GenerateQrResponse(error.getMessage()))));
     }
 }

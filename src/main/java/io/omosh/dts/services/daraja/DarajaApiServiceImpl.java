@@ -3,6 +3,8 @@ package io.omosh.dts.services.daraja;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.omosh.dts.config.DarajaConfig;
 import io.omosh.dts.dtos.daraja.*;
+import io.omosh.dts.dtos.daraja.enums.ExpressTrxCode;
+import io.omosh.dts.dtos.daraja.enums.TransactionType;
 import io.omosh.dts.utils.HelperUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     private final DarajaConfig darajaConfig;
     private final WebClient webClient;
     ObjectMapper objectMapper;
-    Logger logger = LoggerFactory.getLogger(DarajaApiServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(DarajaApiServiceImpl.class);
 
     private AccessTokenResponse cachedToken;
     private Instant expiryTime;
@@ -33,7 +35,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         this.darajaConfig = darajaConfig;
         this.webClient = webClientBuilder.build();
         objectMapper = new ObjectMapper();
-        this.securityCredential = HelperUtil.encryptPassword(darajaConfig.getB2cInitiatorPassword());
+        this.securityCredential = HelperUtil.encryptPasswordWithCert(darajaConfig.getB2cInitiatorPassword());
     }
 
     public synchronized Mono<String> getValidAccessToken() {
@@ -44,7 +46,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         return getAccessToken()
                 .doOnNext(token -> {
                     this.cachedToken = token;
-                    // Set expiry 1 minute earlier for buffer
+                    // Set expiry 1 minute earlier for buffer - token expires in 59 minutes
                     logger.info("cachedToken :::::: {}", cachedToken);
                     this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
                 })
@@ -245,10 +247,10 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                                 .bodyValue(request)
                                 .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> clientResponse.bodyToMono(String.class)
+                                .onStatus(HttpStatusCode::isError, clientResponse -> clientResponse.bodyToMono(ErrorResponse.class)
                                         .flatMap(errorBody -> {
                                             logger.error("callPost Error Response: {}", errorBody);
-                                            return Mono.error(new RuntimeException("callPost failed with status: " + clientResponse.statusCode()));
+                                            return Mono.error(new RuntimeException(HelperUtil.toJson(errorBody)));
                                         }))
                                 .bodyToMono(responseType)
                                 .doOnNext(response -> logger.info("callPost Success Response: {}", HelperUtil.toJson(response)))
@@ -285,7 +287,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         expressRequest.setBusinessShortCode("174379");
         expressRequest.setPassword(password);
         expressRequest.setTimestamp(timestamp);
-        expressRequest.setTransactionType("CustomerPayBillOnline");
+        expressRequest.setTransactionType(TransactionType.CustomerPayBillOnline.name());
         expressRequest.setAmount("1");
         expressRequest.setPartyA("254708374149");
         expressRequest.setPartyB("174379");
@@ -415,24 +417,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     public void printConfig() {
-        System.out.println("consumer-key: " + darajaConfig.getConsumerKey());
-        System.out.println("consumer-secret: " + darajaConfig.getConsumerSecret());
-        System.out.println("security-credential: " + darajaConfig.getSecurityCredential());
-        System.out.println("auth-url: " + darajaConfig.getAuthUrl());
-        System.out.println("b2c-url: " + darajaConfig.getB2cUrl());
-        System.out.println("base-url: " + darajaConfig.getBaseUrl());
-        System.out.println("callback-url: " + darajaConfig.getB2cCallbackUrl());
-        System.out.println("initiate-b2c-url: " + darajaConfig.getB2cInitiateUrl());
-        System.out.println("b2c-party-a: " + darajaConfig.getB2cPartyA());
-        System.out.println("b2c-initiator-name: " + darajaConfig.getB2cInitiatorName());
-        System.out.println("b2c-initiator-password: " + darajaConfig.getB2cInitiatorPassword());
-        System.out.println("c2b-short-code: " + darajaConfig.getC2bShortCode());
-        System.out.println("c2b-register-url: " + darajaConfig.getC2bRegisterUrlUrl());
-        System.out.println("c2b-register-call-url: " + darajaConfig.getC2bRegisterCallUrl());
-        System.out.println("c2b-confirmation-url: " + darajaConfig.getC2bConfirmationUrl());
-        System.out.println("c2b-validation-url: " + darajaConfig.getC2bValidationUrl());
-        System.out.println("c2b-simulation-url: " + darajaConfig.getC2bSimulateUrl());
-        System.out.println("query-balance-url: " + darajaConfig.getQueryBalUrl());
+        logger.info("Daraja Config variables ::: {}", HelperUtil.toJson(darajaConfig));
     }
 
 }

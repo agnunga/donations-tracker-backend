@@ -2,6 +2,8 @@ package io.omosh.dts.controllers;
 
 import io.omosh.dts.models.Beneficiary;
 import io.omosh.dts.services.BeneficiaryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +16,7 @@ public class BeneficiariesController {
 
     private final BeneficiaryService beneficiaryService;
     private List<Beneficiary> beneficiaries;
+    private static final Logger logger = LoggerFactory.getLogger(BeneficiariesController.class);
 
     public BeneficiariesController(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;

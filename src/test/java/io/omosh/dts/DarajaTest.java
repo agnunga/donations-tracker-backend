@@ -2,15 +2,14 @@ package io.omosh.dts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.omosh.dts.dtos.daraja.AccessTokenResponse;
-import io.omosh.dts.services.daraja.DarajaApiServiceImpl;
 import io.omosh.dts.utils.HelperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 import org.springframework.http.MediaType;
 
-
+@Component
 public class DarajaTest {
 
     private final WebClient webClient;
@@ -20,7 +19,6 @@ public class DarajaTest {
     }
 
     public Mono<AccessTokenResponse> getAccessToken(String token) {
-        darajaApiServiceImpl.printConfig();
         return webClient.get()
                 .uri("/oauth/v1/generate?grant_type=client_credentials")
                 .header(HttpHeaders.AUTHORIZATION, "Basic " + token)
@@ -36,11 +34,9 @@ public class DarajaTest {
         System.out.println(objectMapper.writeValueAsString(res.block()));
     }
 
-    @Autowired
-    private DarajaApiServiceImpl darajaApiServiceImpl;
-
     //testing
-    final static String SECRET_KEY = "";
+    final static String SECRET_KEY = "asdasfdsdfgdfh";
+
     public static void main(String[] args) {
         try {
             printResponse(SECRET_KEY);

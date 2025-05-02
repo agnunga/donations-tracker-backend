@@ -3,20 +3,16 @@ package io.omosh.dts.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
@@ -27,7 +23,9 @@ import java.util.Base64;
 public class HelperUtil {
 
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
-    private static final SecureRandom random = new SecureRandom();
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(HelperUtil.class);
 
     public static String generate() {
         StringBuilder sb = new StringBuilder();
@@ -36,7 +34,7 @@ public class HelperUtil {
             if (i > 0 && i % 5 == 0) {
                 sb.append("-");
             }
-            int index = random.nextInt(CHARACTERS.length());
+            int index = RANDOM.nextInt(CHARACTERS.length());
             sb.append(CHARACTERS.charAt(index));
         }
 
@@ -56,7 +54,7 @@ public class HelperUtil {
     }
 
     @SneakyThrows
-    public static String encryptPassword(String password) {
+    public static String encryptPasswordWithCert(String password) {
         // Load the certificate
         FileInputStream fis = new FileInputStream("src/main/resources/cert.cer");
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -75,7 +73,7 @@ public class HelperUtil {
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    public static String getSecurityCredentials2(String initiatorPassword) {
+    public static String encryptPasswordWithCert2(String initiatorPassword) {
         try {
             // Load certificate from resources
             Resource resource = new ClassPathResource("cert.cer");
@@ -98,7 +96,7 @@ public class HelperUtil {
 
         } catch (Exception e) {
             // Use your preferred logging framework
-            System.err.println("Error generating security credentials: " + e.getMessage());
+            logger.error("Error generating security credentials: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -118,8 +116,17 @@ public class HelperUtil {
 
     public static String toJson(Object object) {
         try {
-            return new ObjectMapper().writeValueAsString(object);
+            return OBJECT_MAPPER.writeValueAsString(object);
         } catch (JsonProcessingException exception) {
+            return null;
+        }
+    }
+
+    public static <T> T fromJson(String json, Class<T> returnType) {
+        try {
+            return OBJECT_MAPPER.readValue(json, returnType);
+        } catch (Exception e) {
+            logger.error("Failed to parse {} into {} ", json, returnType.getSimpleName(), e);
             return null;
         }
     }

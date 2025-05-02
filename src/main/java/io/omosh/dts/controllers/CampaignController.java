@@ -16,7 +16,7 @@ import java.util.Optional;
 public class CampaignController {
 
     private final CampaignService campaignService;
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(CampaignController.class);
 
     public CampaignController(CampaignService campaignService) {
         this.campaignService = campaignService;

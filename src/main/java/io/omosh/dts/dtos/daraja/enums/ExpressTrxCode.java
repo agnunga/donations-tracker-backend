@@ -1,4 +1,4 @@
-package io.omosh.dts.dtos.daraja;
+package io.omosh.dts.dtos.daraja.enums;
 
 public enum ExpressTrxCode {
     BG,

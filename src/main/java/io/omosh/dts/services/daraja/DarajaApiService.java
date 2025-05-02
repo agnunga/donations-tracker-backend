@@ -63,6 +63,8 @@ public interface DarajaApiService {
 
     Mono<GenerateQrResponse> initiateGenerateQR();
 
+    void printConfig();
+
     /*Customer To Business (C2B)*/
     /*
     RegisterUrlResponse registerUrl();
