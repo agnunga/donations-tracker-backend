@@ -67,14 +67,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                         logger.info("User authenticated: {}", username);
                     } else {
-                        logger.error("Authentication failed: Invalid or expired token");
+                        logger.info("Authentication failed: Invalid or expired token");
                     }
                 }
+                logger.info("Token exists, but cannot extract username from token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid or expired token");
+//                return;
             } else {
-                logger.warn("No JWT token found in Authorization header");
+                logger.info("No JWT token found in Authorization header");
             }
         } catch (Exception e) {
-            logger.error("Authentication filter error", e);
+            logger.info("Authentication filter error", e);
         }
 
         filterChain.doFilter(request, response);

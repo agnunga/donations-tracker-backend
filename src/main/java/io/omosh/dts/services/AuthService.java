@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ServerWebExchange;
 
 import java.time.LocalDateTime;
 
@@ -94,8 +93,8 @@ public class AuthService {
                 );
     }
 
-    public Optional<JwtAccessToken> logout(String refreshToken) {
+    public void logout(String refreshToken) {
         revokeRefreshToken(refreshToken);
-        return Optional.empty();
     }
+
 }
