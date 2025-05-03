@@ -1,8 +1,11 @@
 package io.omosh.dts.services;
+
 import io.omosh.dts.dtos.DonationsStatsDTO;
 import io.omosh.dts.models.Donation;
 import io.omosh.dts.repositories.DonationRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,51 +18,54 @@ public class DonationService {
         this.donationRepository = donationRepository;
     }
 
-    public List<Donation> getAllDonations() {
+    public Flux<Donation> getAllDonations() {
         return donationRepository.findAll();
     }
 
-    public List<Donation> getDonationsByUser(Long userId) {
-        return donationRepository.findByUserId(userId);
+    public Flux<Donation> getDonationsByUser(Long userId) {
+//        return donationRepository.findByUserId(userId);
+        return Flux.empty();
     }
 
-    public Donation saveDonation(Donation donation) {
+    public Mono<Donation> saveDonation(Donation donation) {
         return donationRepository.save(donation);
     }
 
-    public void deleteDonation(Long id) {
-        donationRepository.deleteById(id);
+    public Mono<Void> deleteDonation(Long id) {
+        return donationRepository.deleteById(id);
     }
 
-    public Optional<Donation> getDonationsById(Long id) {
+    public Mono<Donation> getDonationsById(Long id) {
         return donationRepository.findById(id);
     }
 
-    public long getDonationsCount() {
+    public Mono<Long> getDonationsCount() {
         return donationRepository.count();
     }
 
-    public Donation updateDonation(Long id, Donation updatedDonation) {
+    public Mono<Donation> updateDonation(Long id, Donation updatedDonation) {
         return donationRepository.findById(id)
-                .map(existingDonation -> {
+                .flatMap(existingDonation -> {
                     existingDonation.setAmount(updatedDonation.getAmount()); // Example field update
                     existingDonation.setDonorName(updatedDonation.getDonorName());
                     return donationRepository.save(existingDonation); // ✅ Now saving the updated record
                 })
-                .orElseThrow(() -> new RuntimeException("Donation not found"));
+                .switchIfEmpty(Mono.error(new RuntimeException("Donation not found")));
     }
 
-    public long countDonations() {
+    public Mono<Long> countDonations() {
         return donationRepository.count();
     }
 
-    public double sumDonations() {
-        return donationRepository.sum();
+    public Mono<Double> sumDonations() {
+//        return donationRepository.sum();
+        return Mono.empty();
     }
 
-    public DonationsStatsDTO getDonationsStats() {
+    public Mono<DonationsStatsDTO> getDonationsStats() {
         //return donationRepository.donationsStats();
-        return new DonationsStatsDTO(donationRepository.count(), donationRepository.sum());
+//        return new DonationsStatsDTO(donationRepository.count(), donationRepository.sum());
+        return Mono.empty();
     }
 
 }

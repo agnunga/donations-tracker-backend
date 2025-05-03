@@ -4,11 +4,13 @@ import io.omosh.dts.models.Beneficiary;
 import io.omosh.dts.services.BeneficiaryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/beneficiaries")
@@ -23,31 +25,33 @@ public class BeneficiariesController {
     }
 
     @PostMapping
-    public ResponseEntity<Beneficiary> createBeneficiary(@RequestBody Beneficiary donationDTO) {
-        return ResponseEntity.ok(beneficiaryService.saveBeneficiary(donationDTO));
+    public Mono<ResponseEntity<Beneficiary>> createBeneficiary(@RequestBody Beneficiary donationDTO) {
+        return beneficiaryService.saveBeneficiary(donationDTO)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new Beneficiary())));
     }
 
     @GetMapping
-    public ResponseEntity<List<Beneficiary>> getAllBeneficiaries(){
-        List<Beneficiary> beneficiaries = beneficiaryService.getAllBeneficiaries();
-        return ResponseEntity.ok(beneficiaries);
+    public Mono<ResponseEntity<Flux<Beneficiary>>> getAllBeneficiaries() {
+        return Mono.just(ResponseEntity.ok(beneficiaryService.getAllBeneficiaries()));
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Beneficiary> getBeneficiaryById(@PathVariable Long id) {
-        Optional<Beneficiary> donation = beneficiaryService.findById(id);
-        return donation.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<Beneficiary>> getBeneficiaryById(@PathVariable Long id) {
+        return beneficiaryService.findById(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body(new Beneficiary()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Beneficiary> updateBeneficiary(@PathVariable Long id, @RequestBody Beneficiary updatedBeneficiary) {
-        try {
-            Beneficiary donation = beneficiaryService.updateBeneficiary(id, updatedBeneficiary);
-            return ResponseEntity.ok(updatedBeneficiary);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public Mono<ResponseEntity<Beneficiary>> updateBeneficiary(@PathVariable Long id, @RequestBody Beneficiary updatedBeneficiary) {
+        return beneficiaryService.updateBeneficiary(id, updatedBeneficiary)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body(new Beneficiary()));
     }
 
     /*
@@ -59,19 +63,17 @@ public class BeneficiariesController {
     */
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> softDelete(@PathVariable Long id, @RequestParam String deletedBy) {
-        Optional<Beneficiary> beneficiary = beneficiaryService.findById(id);
-        if (beneficiary.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        beneficiaryService.softDeleteBeneficiary(id, deletedBy);
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> softDelete(@PathVariable Long id, @RequestParam String deletedBy) {
+        return beneficiaryService.softDeleteBeneficiary(id, deletedBy)
+                .thenReturn(ResponseEntity.noContent().build());
+
     }
 
+
     @PutMapping("/{id}/restore")
-    public ResponseEntity<Void> restore(@PathVariable Long id) {
-        beneficiaryService.restore(id);
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> restore(@PathVariable Long id) {
+        return beneficiaryService.restore(id)
+                .thenReturn(ResponseEntity.noContent().build());
     }
 
 }

@@ -1,18 +1,15 @@
 package io.omosh.dts.models;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false) // Ignores superclass fields
-@Table(name = "beneficiaries")
-@SQLRestriction("deleted_at IS NULL") // Ensures soft-deleted records are excluded globally
+@Table("beneficiaries")
 public class Beneficiary extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;

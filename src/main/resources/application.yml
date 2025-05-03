@@ -4,18 +4,12 @@ spring:
   docker:
     compose:
       enabled: false
-  # MySQL Database Configuration
-  datasource:
-    url: jdbc:mysql://localhost:3306/donations?useSSL=false&serverTimezone=UTC
+
+  # R2DBC configuration
+  r2dbc:
+    url: r2dbc:mariadb://127.0.0.1:3306/donations2
     username: root
     password: ""
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  # Hibernate (JPA) Configuration
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate.ddl-auto: update
-    show-sql: true
 
 server:
   port: 9090

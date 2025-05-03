@@ -321,7 +321,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         logger.info("securityCredential encryptPassword :::: {}", securityCredential);
         b2CRequest.setSecurityCredential(securityCredential);
         b2CRequest.setInitiatorName(darajaConfig.getB2cInitiatorName());
-        b2CRequest.setOriginatorConversationID(HelperUtil.generate());
+        b2CRequest.setOriginatorConversationID(HelperUtil.generateUUID());
         b2CRequest.setQueueTimeOutURL(darajaConfig.getB2cCallbackUrl());
         b2CRequest.setResultURL(darajaConfig.getB2cResultUrl());
         b2CRequest.setPartyA(darajaConfig.getB2cPartyA());

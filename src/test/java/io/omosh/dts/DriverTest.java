@@ -1,35 +1,38 @@
 package io.omosh.dts;
 
+import io.r2dbc.spi.*;
+import reactor.core.publisher.Mono;
+
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+
 public class DriverTest {
+
     public static void main(String[] args) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("MySQL JDBC Driver loaded successfully");
-        } catch (ClassNotFoundException e) {
-            System.out.println("Failed to load MySQL JDBC Driver");
-            e.printStackTrace();
-        }
-        double[] a = {1.1,2.2,3.3};
-        int k = 3;
-        f(a,k);
+        // Define connection options
+        ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
+                .option(DRIVER, "mariadb")
+                .option(HOST, "localhost")
+                .option(PORT, 3306)
+                .option(USER, "root")
+                .option(PASSWORD, "")
+                .option(DATABASE, "donations2")
+                .build();
 
-        System.out.println(k);
-        System.out.println(a[0]);
-        System.out.println(a[1]);
-        System.out.println(a[2]);
+        // Get the connection factory
+        ConnectionFactory connectionFactory = ConnectionFactories.get(options);
 
-    }
+        // Try to connect, then close, then print results — all reactively
+        Mono<Void> testConnection = Mono.from(connectionFactory.create())
+                .doOnNext(conn -> System.out.println("Successfully connected to MariaDB via R2DBC!"))
+                .flatMap(conn -> Mono.from(conn.close()));
 
-    public static void f(double[] a, int b){
-
-        double x = f(a,b*1.0);
-    }
-
-
-    public static double f(double[] a, double b){
-        a[0] = a[0]*b;
-        a[1] = a[1]*b;
-        a[2] = a[2]*b;
-        return a[0]+ a[1] + a[2];
+        // Block only once, outside the reactive pipeline
+        testConnection
+                .doOnTerminate(() -> System.out.println("🔚 Connection attempt completed"))
+                .doOnError(e -> {
+                    System.out.println(" Failed to connect or close connection");
+                    e.printStackTrace();
+                })
+                .block(); // Safe because it's top-level, not inside reactive thread
     }
 }

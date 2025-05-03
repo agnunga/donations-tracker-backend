@@ -2,9 +2,9 @@ package io.omosh.dts.services;
 
 import io.omosh.dts.models.Beneficiary;
 import io.omosh.dts.repositories.BeneficiaryRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,11 +18,11 @@ public class BeneficiaryService {
         this.beneficiaryRepository = beneficiaryRepository;
     }
 
-    public List<Beneficiary> getAllBeneficiaries() {
+    public Flux<Beneficiary> getAllBeneficiaries() {
         return beneficiaryRepository.findAll();
     }
 
-    public Beneficiary saveBeneficiary(Beneficiary beneficiary) {
+    public Mono<Beneficiary> saveBeneficiary(Beneficiary beneficiary) {
         return beneficiaryRepository.save(beneficiary);
     }
 
@@ -30,28 +30,30 @@ public class BeneficiaryService {
         beneficiaryRepository.deleteById(id);
     }
 
-    public Optional<Beneficiary> findById(Long id) {
+    public Mono<Beneficiary> findById(Long id) {
         return beneficiaryRepository.findById(id);
     }
 
-    public Beneficiary updateBeneficiary(Long id, Beneficiary updatedBeneficiary) {
+    public Mono<Beneficiary> updateBeneficiary(Long id, Beneficiary updatedBeneficiary) {
         return beneficiaryRepository.findById(id)
-                .map(existingDonation -> {
+                .flatMap(existingDonation -> {
                     existingDonation.setTotalAmount(updatedBeneficiary.getTotalAmount()); // Example field update
                     existingDonation.setName(updatedBeneficiary.getName());
                     return beneficiaryRepository.save(existingDonation); // ✅ Now saving the updated record
                 })
-                .orElseThrow(() -> new RuntimeException("Donation not found"));
+                .switchIfEmpty(Mono.error(new RuntimeException("Donation not found")));
     }
 
-    @Transactional
-    public void softDeleteBeneficiary(Long id, String deletedBy) {
+    public Mono<Void> softDeleteBeneficiary(Long id, String deletedBy) {
         LocalDateTime now = LocalDateTime.now();
-        beneficiaryRepository.softDelete(id, now, deletedBy);
+//        beneficiaryRepository.softDelete(id, now, deletedBy);
+        return Mono.empty();
     }
 
-    public void restore(Long id) {
-        beneficiaryRepository.restore(id);
+    public Mono<Void> restore(Long id) {
+//        beneficiaryRepository.restore(id);
+        return Mono.empty();
+
     }
 
 }

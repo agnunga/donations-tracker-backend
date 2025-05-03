@@ -1,12 +1,13 @@
 package io.omosh.dts.repositories;
 
 import io.omosh.dts.models.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
+public interface UserRepository extends ReactiveCrudRepository<User, Long> {
+    Mono<User> findByUsername(String username);
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
-    boolean existsByUsername(String username);
+    Mono<User> findByEmail(String email);
+
+    Mono<Boolean> existsByUsername(String username);
 }

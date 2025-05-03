@@ -2,19 +2,16 @@ package io.omosh.dts.models;
 
 import io.omosh.dts.models.enums.Role;
 import io.omosh.dts.models.enums.Status;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.Set;
-
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
+@Table("users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;

@@ -19,26 +19,15 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.UUID;
 
 public class HelperUtil {
 
-    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
-    private static final SecureRandom RANDOM = new SecureRandom();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(HelperUtil.class);
 
-    public static String generate() {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 20; i++) {
-            if (i > 0 && i % 5 == 0) {
-                sb.append("-");
-            }
-            int index = RANDOM.nextInt(CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
-        }
-
-        return sb.toString();
+    public static String generateUUID() {
+        return UUID.randomUUID().toString();
     }
 
     public static String encryptCredential(String password, String base64Cert) throws Exception {

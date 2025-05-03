@@ -1,15 +1,14 @@
 package io.omosh.dts.controllers;
 
-import io.omosh.dts.config.JwtAuthenticationFilter;
 import io.omosh.dts.models.Campaign;
 import io.omosh.dts.services.CampaignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/campaigns")
@@ -23,44 +22,51 @@ public class CampaignController {
     }
 
     @PostMapping
-    public ResponseEntity<Campaign> createCampaign(@RequestBody Campaign campaign) {
+    public Mono<ResponseEntity<Campaign>> createCampaign(@RequestBody Campaign campaign) {
         logger.info("Campaigns PostMapping triggered token ::: {}", "createCampaign");
-        return ResponseEntity.ok(campaignService.createCampaign(campaign));
+        return campaignService.createCampaign(campaign)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Campaign>> getAllCampaigns(){
+    public Mono<ResponseEntity<Flux<Campaign>>> getAllCampaigns() {
         logger.info("Campaigns GetMapping triggered token ::: {}", "getAllCampaigns");
-        List<Campaign> campaigns = campaignService.getAllCampaigns();
-        return ResponseEntity.ok(campaigns);
+        return Mono.just(ResponseEntity.ok(campaignService.getAllCampaigns()));
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Campaign> getCampaignById(@PathVariable Long id) {
-        Optional<Campaign> campaign = campaignService.getCampaignById(id);
-        return campaign.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<Campaign>> getCampaignById(@PathVariable Long id) {
+        return campaignService.getCampaignById(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Campaign> updateCampaign(@PathVariable Long id, @RequestBody Campaign updatedCampaign) {
-        try {
-            Campaign campaign = campaignService.updateCampaign(id, updatedCampaign);
-            return ResponseEntity.ok(campaign);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public Mono<ResponseEntity<Campaign>> updateCampaign(@PathVariable Long id, @RequestBody Campaign updatedCampaign) {
+        return campaignService.updateCampaign(id, updatedCampaign)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCampaign(@PathVariable Long id) {
-        campaignService.deleteCampaign(id);
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> deleteCampaign(@PathVariable Long id) {
+        return campaignService.deleteCampaign(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long>  countCampaigns() {
-        long count = campaignService.count();
-        return ResponseEntity.ok(count);
+    public Mono<ResponseEntity<Long>> countCampaigns() {
+        return campaignService.count()
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty((ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)));
     }
 
 }
