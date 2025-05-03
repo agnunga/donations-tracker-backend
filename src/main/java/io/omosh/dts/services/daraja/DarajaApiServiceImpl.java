@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -45,21 +46,21 @@ public class DarajaApiServiceImpl implements DarajaApiService {
         this.securityCredential = HelperUtil.encryptPasswordWithCert(darajaConfig.getB2cInitiatorPassword());
     }
 
-    public synchronized String getValidAccessToken() {
+    public synchronized Optional<String> getValidAccessToken() {
         if (cachedToken != null && Instant.now().isBefore(expiryTime)) {
-            return cachedToken.getAccessToken();
+            return Optional.of(cachedToken.getAccessToken());
         }
 
-        this.cachedToken = getAccessToken();
-        // Set expiry 1 minute earlier for buffer - token expires in 59 minutes
-        logger.info("cachedToken :::::: {}", cachedToken);
-        this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
-
-        return getAccessToken().getAccessToken();
+        return getAccessToken()
+                .map(token -> {
+                    this.cachedToken = token;
+                    this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60); // 58 min
+                    return token.getAccessToken();
+                });
     }
 
     @Override
-    public AccessTokenResponse getAccessToken() {
+    public Optional<AccessTokenResponse> getAccessToken() {
         String authHeader = HelperUtil.toBase64(
                 darajaConfig.getConsumerKey() + ":" + darajaConfig.getConsumerSecret()
         );
@@ -74,15 +75,18 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                 .addHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
                 .build();
 
-        try {
-            Response response = okHttpClient.newCall(request).execute();
-            assert response.body() != null;
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            if (response.body() == null) {
+                logger.error("Response body is null while retrieving access token");
+                return Optional.empty();
+            }
 
-            // use Jackson to Decode the ResponseBody ...
-            return HelperUtil.fromJson(response.body().string(), AccessTokenResponse.class);
+            String responseBody = response.body().string();
+            AccessTokenResponse tokenResponse = HelperUtil.fromJson(responseBody, AccessTokenResponse.class);
+            return Optional.ofNullable(tokenResponse);
         } catch (IOException e) {
-            logger.error(String.format("Could not get access token. - %s", e.getLocalizedMessage()));
-            return null;
+            logger.error("Could not get access token: {}", e.getLocalizedMessage(), e);
+            return Optional.empty();
         }
     }
 
@@ -249,11 +253,12 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     private <T> T callPost(String url, Object request, Class<T> responseType) {
         logger.info("Service callPost:::::::=> {}", HelperUtil.toJson(request));
 
-        String token = getValidAccessToken();
-        if (token.isEmpty()) {
-            throw new RuntimeException("Unable to retrieve access token");
-        }
+        String token = getValidAccessToken()
+                .orElseThrow(() -> new RuntimeException("Unable to retrieve access token"));
 
+        if (token.isBlank()) {
+            throw new RuntimeException("Access token is blank");
+        }
         try {
             OkHttpClient client = new OkHttpClient();
 

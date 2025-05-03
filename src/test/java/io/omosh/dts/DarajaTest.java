@@ -50,8 +50,6 @@ public class DarajaTest {
 
     public void printResponse(String secretKey) throws Exception {
 
-        AccessTokenResponse res = darajaApiService.getAccessToken();
-
     }
 
     public static void main(String[] args) {

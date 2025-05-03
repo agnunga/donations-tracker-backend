@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface DarajaApiService {
 
     /*Authorization*/
-    AccessTokenResponse getAccessToken();
+    Optional<AccessTokenResponse> getAccessToken();
 
     SyncResponse getB2CTransactionResults(B2cResult b2CResult);
 
