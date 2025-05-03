@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/momo")
@@ -30,7 +29,7 @@ public class DarajaController {
     @PostMapping(value = "/b2c-initiate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> initiateB2cPayment(@RequestBody B2cRequestExternal b2CRequestExternal) {
         logger.info("Just in b2CRequestExternal :::: {}", HelperUtil.toJson(b2CRequestExternal));
-        service.performB2CTransaction(b2CRequestExternal).subscribe();
+        service.performB2CTransaction(b2CRequestExternal);
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
@@ -51,7 +50,7 @@ public class DarajaController {
     @PostMapping(value = "/c2b-register-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> c2bRegisterUrl() {
         logger.info("Just in c2bRegisterUrl ::::");
-        service.c2bRegisterUrl().subscribe();
+        service.c2bRegisterUrl();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
@@ -76,14 +75,14 @@ public class DarajaController {
     @PostMapping(value = "/c2b-simulate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> c2bSimulate() {
         logger.info("Just in c2bSimulate :::: ");
-        service.c2bSimulate().subscribe();
+        service.c2bSimulate();
         return ResponseEntity.ok(new AcknowledgeResponse("success"));
     }
 
     @PostMapping(value = "/query-transaction-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> queryTransaction() {
         logger.info("Just in c2bValidation :::: ");
-        service.queryTransaction().subscribe();
+        service.queryTransaction();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -108,7 +107,7 @@ public class DarajaController {
     @PostMapping(value = "/query-bal-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> queryBalCall() {
         logger.info("Just in queryBalCall :::: {}", "No req body");
-        service.initiateQueryBalance().subscribe();
+        service.initiateQueryBalance();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -151,7 +150,7 @@ public class DarajaController {
     @PostMapping(value = "/reversal-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> reversalCall() {
         logger.info("Just in reversalCall :::: ");
-        service.initiateReversal().subscribe();
+        service.initiateReversal();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -176,7 +175,7 @@ public class DarajaController {
     @PostMapping(value = "/remit-tax-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> remitTaxCall() {
         logger.info("Just in remitTaxCall :::: ");
-        service.initiateRemitTax().subscribe();
+        service.initiateRemitTax();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -201,7 +200,7 @@ public class DarajaController {
     @PostMapping(value = "/payment-request-call", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgeResponse> paymentRequestCall() {
         logger.info("Just in paymentRequestCall :::: ");
-        service.initiatePaymentRequest().subscribe();
+        service.initiatePaymentRequest();
         return ResponseEntity.ok(new AcknowledgeResponse("ok"));
     }
 
@@ -215,29 +214,21 @@ public class DarajaController {
     }
 
     @PostMapping(value = "/express-call", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<ExpressResponse>> initiateStkPushRequest() {
+    public ResponseEntity<ExpressResponse> initiateStkPushRequest() {
         logger.info("Just in initiateStkPushRequest :::: ");
-        return service.initiateStkPushRequest()
-                .map(ResponseEntity::ok)
-                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new ExpressResponse(error.getMessage()))));
+        return ResponseEntity.ok(service.initiateStkPushRequest());
+
     }
 
     @PostMapping(value = "/express-query-call", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<ExpressQueryResponse>> initiateStkPushQuery() {
+    public ResponseEntity<ExpressQueryResponse> initiateStkPushQuery() {
         logger.info("Just in initiateStkPushQuery :::: ");
-        return service.initiateStkPushQuery()
-                .map(ResponseEntity::ok)
-                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new ExpressQueryResponse(error.getMessage()))));
+        return ResponseEntity.ok(service.initiateStkPushQuery());
     }
 
     @PostMapping(value = "/generate-qr-call", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<GenerateQrResponse>> initiateGenerateQR() {
+    public ResponseEntity<GenerateQrResponse> initiateGenerateQR() {
         logger.info("Just in initiateGenerateQR :::: ");
-        return service.initiateGenerateQR()
-                .map(ResponseEntity::ok)
-                .onErrorResume(error -> Mono.just(ResponseEntity.internalServerError()
-                        .body(new GenerateQrResponse(error.getMessage()))));
+        return ResponseEntity.ok(service.initiateGenerateQR());
     }
 }

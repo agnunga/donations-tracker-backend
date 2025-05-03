@@ -3,84 +3,87 @@ package io.omosh.dts.config;
 import io.omosh.dts.models.User;
 import io.omosh.dts.repositories.UserRepository;
 import io.omosh.dts.utils.JwtUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
-import reactor.core.publisher.Mono;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.util.Optional;
 
-@Component
-public class JwtAuthenticationFilter implements WebFilter {
+/**
+ * Custom JWT Authentication Filter for Spring MVC.
+ */
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
+    private final UserRepository userRepository; // ✅ make sure you import your correct repository
 
     public JwtAuthenticationFilter(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String token = extractToken(exchange);
-        logger.info("JwtAuthenticationFilter triggered token ::: {}", token);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if (token != null) {
-            Optional<String> usernameOpt = JwtUtil.extractUsername(token);
-            logger.info("Extracted token: {}", token);
+        try {
+            String token = extractToken(request);
+            logger.info("JwtAuthenticationFilter triggered, token: {}", token);
 
-            if (usernameOpt.isPresent()) {
-                String username = usernameOpt.get();
+            if (token != null) {
+                Optional<String> usernameOpt = JwtUtil.extractUsername(token);
 
-                logger.info("Extracted username from token: {}", username);
+                if (usernameOpt.isPresent()) {
+                    String username = usernameOpt.get();
+                    logger.info("Extracted username from token: {}", username);
 
-                // Fetch user from database
-                Optional<User> userOpt = userRepository.findByUsername(username);
-                if (userOpt.isPresent() && JwtUtil.isTokenValid(token, username)) {
-                    User user = userOpt.get();
+                    Optional<User> userOpt = userRepository.findByUsername(username);
+                    if (userOpt.isPresent() && JwtUtil.isTokenValid(token, username)) {
+                        User user = userOpt.get();
 
-                    UserDetails userDetails = org.springframework.security.core.userdetails.User
-                            .withUsername(user.getUsername())
-                            .password(user.getPassword()) // Not needed for security checks
-                            .roles(user.getRole().name())
-                            .build();
+                        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                                .username(user.getUsername())
+                                .password(user.getPassword()) // Optional for stateless JWTs
+                                .roles(user.getRole().name())
+                                .build();
 
-                    // Create authentication object
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
 
-
-                    logger.info("User authenticated: {}", username);
-                    // After creating authToken
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(authToken);
-                    logger.info("SecurityContext Authentication: {}", SecurityContextHolder.getContext().getAuthentication());
-                    return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)));
-
-                }else{
-                    logger.error("User not authenticated: Toked expired");
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        logger.info("User authenticated: {}", username);
+                    } else {
+                        logger.error("Authentication failed: Invalid or expired token");
+                    }
                 }
+            } else {
+                logger.warn("No JWT token found in Authorization header");
             }
-        }else {
-            logger.warn("NO JWT token found in request");
+        } catch (Exception e) {
+            logger.error("Authentication filter error", e);
         }
 
-        return chain.filter(exchange);
+        filterChain.doFilter(request, response);
     }
 
-    private String extractToken(ServerWebExchange exchange) {
-        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
-        logger.info("extractToken ::: {}", authHeader );
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
         }
         return null;
     }

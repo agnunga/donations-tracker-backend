@@ -1,40 +1,39 @@
 package io.omosh.dts.services.daraja;
 
 import io.omosh.dts.dtos.daraja.*;
-import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 public interface DarajaApiService {
 
     /*Authorization*/
-    Mono<AccessTokenResponse> getAccessToken();
+    AccessTokenResponse getAccessToken();
 
-    Mono<SyncResponse> getB2CTransactionResults(B2cResult b2CResult);
+    SyncResponse getB2CTransactionResults(B2cResult b2CResult);
 
-    Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal);
+    SyncResponse performB2CTransaction(B2cRequestExternal b2CRequestExternal);
 
-    Mono<SyncResponse> c2bRegisterUrl();
+    SyncResponse c2bRegisterUrl();
 
-    Mono<SyncResponse> c2bSimulate();
+    SyncResponse c2bSimulate();
 
     boolean c2bConfirmation(C2bConfirmation c2bConfirmation);
 
     boolean c2bValidation(C2bConfirmation c2bValidation);
 
-    Mono<SyncResponse> queryTransaction();
+    SyncResponse queryTransaction();
 
     boolean queryTransactionQueueTimeout(TransactionStatusResult statusResponse);
 
     boolean queryTransactionResult(TransactionStatusResult statusResponse);
 
-    Mono<SyncResponse> initiateQueryBalance();
+    SyncResponse initiateQueryBalance();
 
     boolean queryBalResult(QueryBalanceResult queryBalanceResult);
 
     boolean queryBalQueueTimeout(QueryBalanceResult queryBalanceResult);
 
-    Mono<SyncResponse> initiateReversal();
+    SyncResponse initiateReversal();
 
     boolean reversalQueue(ReversalResult reversalResult);
 
@@ -44,24 +43,24 @@ public interface DarajaApiService {
 
     boolean remitTaxQueue(RemitTaxResult remitTaxResult);
 
-    Mono<SyncResponse> initiateRemitTax();
+    SyncResponse initiateRemitTax();
 
     boolean paymentRequestResult(PaymentRequestResult paymentRequestResult);
 
     boolean paymentRequestQueue(PaymentRequestResult paymentRequestResult);
 
-    Mono<SyncResponse> initiatePaymentRequest();
+    SyncResponse initiatePaymentRequest();
 
     /*M-Pesa Express callback*/
     boolean stkPushCallback(ExpressResult expressResult);
 
     /*M-Pesa Express Simulate*/
-    Mono<ExpressResponse> initiateStkPushRequest();
+    ExpressResponse initiateStkPushRequest();
 
     /*M-Pesa Express Query*/
-    Mono<ExpressQueryResponse> initiateStkPushQuery();
+    ExpressQueryResponse initiateStkPushQuery();
 
-    Mono<GenerateQrResponse> initiateGenerateQR();
+    GenerateQrResponse initiateGenerateQR();
 
     void printConfig();
 

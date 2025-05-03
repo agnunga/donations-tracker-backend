@@ -1,47 +1,61 @@
 package io.omosh.dts;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.omosh.dts.dtos.daraja.AccessTokenResponse;
+import io.omosh.dts.services.daraja.DarajaApiService;
 import io.omosh.dts.utils.HelperUtil;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import reactor.core.publisher.Mono;
-import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DarajaTest {
 
-    private final WebClient webClient;
+    private final OkHttpClient okHttpClient;
+    Logger logger = LoggerFactory.getLogger(DarajaTest.class);
+    private DarajaApiService darajaApiService;
 
-    public DarajaTest(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://sandbox.safaricom.co.ke").build();
+    public DarajaTest(DarajaApiService darajaApiService) {
+
+        this.darajaApiService = darajaApiService;
+
+        this.okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)  // Adjust connection timeout
+                .writeTimeout(30, TimeUnit.SECONDS)    // Adjust write timeout
+                .readTimeout(30, TimeUnit.SECONDS)     // Adjust read timeout
+                .build();
     }
 
-    public Mono<AccessTokenResponse> getAccessToken(String token) {
-        return webClient.get()
-                .uri("/oauth/v1/generate?grant_type=client_credentials")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + token)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(AccessTokenResponse.class); // or use a custom response class
-    }
-
-    public static void printResponse(String secretKey) throws Exception {
-        DarajaTest darajaAuthService = new DarajaTest(WebClient.builder());
-        Mono<AccessTokenResponse> res = darajaAuthService.getAccessToken(HelperUtil.toBase64(secretKey)); // Only for testing outside reactive context
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.writeValueAsString(res.block()));
-    }
-
-    //testing
-    final static String SECRET_KEY = "asdasfdsdfgdfh";
-
-    public static void main(String[] args) {
+    public AccessTokenResponse getAccessToken(String token) {
+        Request request = new Request.Builder()
+                .url("/oauth/v1/generate?grant_type=client_credentials")
+                .addHeader(HttpHeaders.AUTHORIZATION, "Basic " + token)
+                .addHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .build();
         try {
-            printResponse(SECRET_KEY);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Response response = okHttpClient.newCall(request).execute();
+            assert response.body() != null;
+            return HelperUtil.fromJson(response.body().string(), AccessTokenResponse.class);
+        } catch (IOException e) {
+            logger.error("Could not get access token {}", e.getLocalizedMessage());
+            return null;
         }
     }
+
+    public void printResponse(String secretKey) throws Exception {
+
+        AccessTokenResponse res = darajaApiService.getAccessToken();
+
+    }
+
+    public static void main(String[] args) {
+        System.out.println("testing tu");
+    }
+
 }

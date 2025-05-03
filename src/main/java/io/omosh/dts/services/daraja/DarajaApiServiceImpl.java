@@ -6,23 +6,26 @@ import io.omosh.dts.dtos.daraja.*;
 import io.omosh.dts.dtos.daraja.enums.ExpressTrxCode;
 import io.omosh.dts.dtos.daraja.enums.TransactionType;
 import io.omosh.dts.utils.HelperUtil;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DarajaApiServiceImpl implements DarajaApiService {
 
     private final DarajaConfig darajaConfig;
-    private final WebClient webClient;
+    private final OkHttpClient okHttpClient;
     ObjectMapper objectMapper;
     private final Logger logger = LoggerFactory.getLogger(DarajaApiServiceImpl.class);
 
@@ -31,74 +34,80 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     private final String securityCredential;
 
     @Autowired
-    public DarajaApiServiceImpl(DarajaConfig darajaConfig, WebClient.Builder webClientBuilder) {
+    public DarajaApiServiceImpl(DarajaConfig darajaConfig) {
         this.darajaConfig = darajaConfig;
-        this.webClient = webClientBuilder.build();
+        this.okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)  // Adjust connection timeout
+                .writeTimeout(30, TimeUnit.SECONDS)    // Adjust write timeout
+                .readTimeout(30, TimeUnit.SECONDS)     // Adjust read timeout
+                .build();
         objectMapper = new ObjectMapper();
         this.securityCredential = HelperUtil.encryptPasswordWithCert(darajaConfig.getB2cInitiatorPassword());
     }
 
-    public synchronized Mono<String> getValidAccessToken() {
+    public synchronized String getValidAccessToken() {
         if (cachedToken != null && Instant.now().isBefore(expiryTime)) {
-            return Mono.just(cachedToken.getAccessToken());
+            return cachedToken.getAccessToken();
         }
 
-        return getAccessToken()
-                .doOnNext(token -> {
-                    this.cachedToken = token;
-                    // Set expiry 1 minute earlier for buffer - token expires in 59 minutes
-                    logger.info("cachedToken :::::: {}", cachedToken);
-                    this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
-                })
-                .map(AccessTokenResponse::getAccessToken);
+        this.cachedToken = getAccessToken();
+        // Set expiry 1 minute earlier for buffer - token expires in 59 minutes
+        logger.info("cachedToken :::::: {}", cachedToken);
+        this.expiryTime = Instant.now().plusSeconds(59 * 60 - 60);
+
+        return getAccessToken().getAccessToken();
     }
 
     @Override
-    public Mono<AccessTokenResponse> getAccessToken() {
+    public AccessTokenResponse getAccessToken() {
+        String authHeader = HelperUtil.toBase64(
+                darajaConfig.getConsumerKey() + ":" + darajaConfig.getConsumerSecret()
+        );
+
+        logger.info("The auth header :: {}", authHeader);
+        logger.info("The auth URL :: {}", darajaConfig.getAuthUrl());
+
+        Request request = new Request.Builder()
+                .url(darajaConfig.getAuthUrl())
+                .get()
+                .addHeader(HttpHeaders.AUTHORIZATION, "Basic " + authHeader)
+                .addHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .build();
+
         try {
-            String authHeader = HelperUtil.toBase64(
-                    darajaConfig.getConsumerKey() + ":" + darajaConfig.getConsumerSecret()
-            );
+            Response response = okHttpClient.newCall(request).execute();
+            assert response.body() != null;
 
-            logger.info("The auth header :: {}", authHeader);
-            logger.info("The auth URL :: {}", darajaConfig.getAuthUrl());
-
-            return webClient.get()
-                    .uri(darajaConfig.getAuthUrl())
-                    .header(HttpHeaders.AUTHORIZATION, "Basic " + authHeader)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(AccessTokenResponse.class)
-                    .doOnError(e -> logger.error("Failed to fetch access token::{}", e.getMessage()));
-
-        } catch (Exception e) {
-            // Wrap checked exception (e.g., Base64 encoding) in a Mono error
-            return Mono.error(new RuntimeException("Error creating auth header::: {}", e));
+            // use Jackson to Decode the ResponseBody ...
+            return HelperUtil.fromJson(response.body().string(), AccessTokenResponse.class);
+        } catch (IOException e) {
+            logger.error(String.format("Could not get access token. - %s", e.getLocalizedMessage()));
+            return null;
         }
     }
 
     @Override
-    public Mono<SyncResponse> getB2CTransactionResults(B2cResult b2CResult) {
+    public SyncResponse getB2CTransactionResults(B2cResult b2CResult) {
         logger.info("b2CResult ::: {}", HelperUtil.toJson(b2CResult));
         return null;
     }
 
     @Override
-    public Mono<SyncResponse> performB2CTransaction(B2cRequestExternal b2CRequestExternal) {
+    public SyncResponse performB2CTransaction(B2cRequestExternal b2CRequestExternal) {
         logger.info("Service performB2CTransaction :::");
         B2cRequest b2CRequest = getB2cRequest(b2CRequestExternal);
         return callPost(darajaConfig.getB2cUrl(), b2CRequest, SyncResponse.class);
     }
 
     @Override
-    public Mono<SyncResponse> c2bRegisterUrl() {
+    public SyncResponse c2bRegisterUrl() {
         logger.info("Service c2bRegisterUrl :::");
         C2bRegisterUrl c2bRegister = getC2bRegisterUrl();
         return callPost(darajaConfig.getC2bRegisterUrlUrl(), c2bRegister, SyncResponse.class);
     }
 
     @Override
-    public Mono<SyncResponse> c2bSimulate() {
+    public SyncResponse c2bSimulate() {
         logger.info("Service c2bSimulate :::");
         C2bSimulate c2BSimulate = getC2bSimulate();
         return callPost(darajaConfig.getC2bSimulateUrl(), c2BSimulate, SyncResponse.class);
@@ -117,7 +126,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> queryTransaction() {
+    public SyncResponse queryTransaction() {
         logger.info("Service queryTransaction :::: ");
         return callPost(darajaConfig.getQueryTransactionUrl(), getTransactionStatusRequest(), SyncResponse.class);
     }
@@ -135,7 +144,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> initiateQueryBalance() {
+    public SyncResponse initiateQueryBalance() {
         logger.info("Service queryBalance :::: ");
         return callPost(darajaConfig.getQueryBalUrl(), getQueryBalanceRequest(), SyncResponse.class);
     }
@@ -155,7 +164,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> initiateReversal() {
+    public SyncResponse initiateReversal() {
         logger.info("Service reversal - :::");
         return callPost(darajaConfig.getReversalUrl(), getReversalRequest(), SyncResponse.class);
     }
@@ -187,7 +196,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
     }
 
     @Override
-    public Mono<SyncResponse> initiateRemitTax() {
+    public SyncResponse initiateRemitTax() {
         logger.info("Service remitTax - :::");
         return callPost(darajaConfig.getRemitTaxUrl(), getRemitTaxRequest(), SyncResponse.class);
     }
@@ -206,7 +215,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     /*Business Pay Bill - payment request*/
     @Override
-    public Mono<SyncResponse> initiatePaymentRequest() {
+    public SyncResponse initiatePaymentRequest() {
         logger.info("Service paymentRequestCall - :::");
         return callPost(darajaConfig.getPaymentRequestUrl(), getPaymentRequestRequest(), SyncResponse.class);
     }
@@ -220,43 +229,62 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
     /*M-Pesa Express Simulate*/
     @Override
-    public Mono<ExpressResponse> initiateStkPushRequest() {
+    public ExpressResponse initiateStkPushRequest() {
         logger.info("Service initiateStkPushRequest - :::");
         return callPost(darajaConfig.getExpressUrl(), getExpressRequest(), ExpressResponse.class);
     }
 
     @Override
-    public Mono<ExpressQueryResponse> initiateStkPushQuery() {
+    public ExpressQueryResponse initiateStkPushQuery() {
         logger.info("Service initiateStkPushQuery - :::");
         return callPost(darajaConfig.getExpressQueryUrl(), getExpressQueryRequest(), ExpressQueryResponse.class);
     }
 
     @Override
-    public Mono<GenerateQrResponse> initiateGenerateQR() {
+    public GenerateQrResponse initiateGenerateQR() {
         logger.info("Service initiateGenerateQR - :::");
         return callPost(darajaConfig.getGenerateQrUrl(), getGenerateQrRequest(), GenerateQrResponse.class);
     }
 
-    private <T> Mono<T> callPost(String url, Object request, Class<T> responseType) {
-        logger.info("Service callPost:::::::=>{}", HelperUtil.toJson(request));
-        return getValidAccessToken()
-                .flatMap(token ->
-                        webClient.post()
-                                .uri(url)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                .bodyValue(request)
-                                .retrieve()
-                                .onStatus(HttpStatusCode::isError, clientResponse -> clientResponse.bodyToMono(ErrorResponse.class)
-                                        .flatMap(errorBody -> {
-                                            logger.error("callPost Error Response: {}", errorBody);
-                                            return Mono.error(new RuntimeException(HelperUtil.toJson(errorBody)));
-                                        }))
-                                .bodyToMono(responseType)
-                                .doOnNext(response -> logger.info("callPost Success Response: {}", HelperUtil.toJson(response)))
-                                .doOnError(error -> logger.error("callPost Exception: {}", error.getMessage()/*, error*/))
-                );
+    private <T> T callPost(String url, Object request, Class<T> responseType) {
+        logger.info("Service callPost:::::::=> {}", HelperUtil.toJson(request));
+
+        String token = getValidAccessToken();
+        if (token.isEmpty()) {
+            throw new RuntimeException("Unable to retrieve access token");
+        }
+
+        try {
+            OkHttpClient client = new OkHttpClient();
+
+            RequestBody body = RequestBody.create(Constants.JSON_MEDIA_TYPE,
+                    Objects.requireNonNull(HelperUtil.toJson(request)));
+
+            Request httpRequest = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("Authorization", "Bearer " + token)
+                    .addHeader("Content-Type", "application/json")
+                    .build();
+
+            try (Response response = client.newCall(httpRequest).execute()) {
+                String responseBody = response.body().string();
+
+                if (!response.isSuccessful()) {
+                    logger.error("callPost Error Response: {}", responseBody);
+                    throw new RuntimeException("Error from service: " + responseBody);
+                }
+
+                logger.info("callPost Success Response: {}", responseBody);
+                return objectMapper.readValue(responseBody, responseType);
+            }
+
+        } catch (IOException e) {
+            logger.error("callPost Exception: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to execute POST request", e);
+        }
     }
+
 
     private static ExpressQueryRequest getExpressQueryRequest() {
         ExpressQueryRequest expressQueryRequest = new ExpressQueryRequest();
