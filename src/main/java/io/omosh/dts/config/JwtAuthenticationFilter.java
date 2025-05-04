@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                                 .username(user.getUsername())
-                                .password(user.getPassword()) // Optional for stateless JWTs
+                                .password(user.getPassword())
                                 .roles(user.getRole().name())
                                 .build();
 
@@ -66,23 +66,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                         logger.info("User authenticated: {}", username);
-                    } else {
-                        logger.info("Authentication failed: Invalid or expired token");
+
+                        filterChain.doFilter(request, response);
+                        return;
                     }
                 }
-                logger.info("Token exists, but cannot extract username from token");
+
+                // If username couldn't be extracted or token is invalid
+                logger.info("Authentication failed: Invalid or expired token");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid or expired token");
-//                return;
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
+                return; // ✅ STOP further processing
             } else {
                 logger.info("No JWT token found in Authorization header");
             }
         } catch (Exception e) {
-            logger.info("Authentication filter error", e);
+            logger.error("Authentication filter error", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Internal error in authentication filter\"}");
+            return; // ✅ STOP on unexpected error
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

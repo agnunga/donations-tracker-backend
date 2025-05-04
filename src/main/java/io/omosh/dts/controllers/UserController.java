@@ -4,6 +4,7 @@ import io.omosh.dts.config.JwtAuthenticationFilter;
 import io.omosh.dts.dtos.UserDTO;
 import io.omosh.dts.models.User;
 import io.omosh.dts.services.UserService;
+import io.omosh.dts.utils.HelperUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,7 @@ public class UserController {
 
         // Fetch all users if authenticated
         List<User> users = userService.getAllUsers();
+        logger.info("users fetched after authentication ::: {}", HelperUtil.toJson(users));
         return ResponseEntity.ok(users);
     }
 

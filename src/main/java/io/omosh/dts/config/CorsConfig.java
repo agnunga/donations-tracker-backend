@@ -19,7 +19,7 @@ public class CorsConfig {
         // Specify allowed HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Specify allowed headers
-        corsConfig.setAllowedHeaders(Arrays.asList("Cache-Control", "Authorization", "Content-Type", "Accept", "ngrok-skip-browser-warning"));
+        corsConfig.setAllowedHeaders(Arrays.asList("Refresh-Token", "Cache-Control", "Authorization", "Content-Type", "Accept", "ngrok-skip-browser-warning"));
         // Specify exposed headers
         corsConfig.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         // Allow credentials
