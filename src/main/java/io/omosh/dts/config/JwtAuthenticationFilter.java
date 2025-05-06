@@ -2,13 +2,16 @@ package io.omosh.dts.config;
 
 import io.omosh.dts.models.User;
 import io.omosh.dts.repositories.UserRepository;
+import io.omosh.dts.utils.HelperUtil;
 import io.omosh.dts.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+        logger.info("JwtAuthenticationFilter triggered, URI: {}", request.getRequestURI());
 
         try {
             String token = extractToken(request);
@@ -93,9 +97,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     private String extractToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
+        logger.info("extractToken -> entering before checking authHeader");
+        // 1. Check Authorization header
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            logger.info("extractToken -> getHeader :::: {}", authHeader);
+            return authHeader.substring(7);
+        }
+
+        logger.info("extractToken -> no authHeader {}", HelperUtil.toJson(request.getCookies()));
+        // 2. If not in header, check cookies
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("token".equals(cookie.getName())) {
+                    logger.info("extractToken -> cookie.getValue(); :::: {}", cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

@@ -35,24 +35,14 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-        // Log that this method has been entered
         logger.info("Users GetMapping triggered");
 
-        // Check if the user is authenticated using SecurityContextHolder
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            // If not authenticated, log and return 401 Unauthorized
-            logger.info("User is not authenticated. Returning 401 Unauthorized");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        // Log if the user is authenticated
         logger.info("User authenticated with username: {}", authentication.getName());
 
-        // Fetch all users if authenticated
         List<User> users = userService.getAllUsers();
-        logger.info("users fetched after authentication ::: {}", HelperUtil.toJson(users));
+        logger.info("Users fetched: {}", HelperUtil.toJson(users));
+
         return ResponseEntity.ok(users);
     }
 

@@ -12,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -26,7 +28,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
+    @PostMapping("/login-")
     public ResponseEntity<JwtAccessToken> login(HttpServletRequest request, @RequestBody LoginRequest loginRequest) {
         return authService.login(request, loginRequest)
                 .map(ResponseEntity::ok)
@@ -48,15 +50,26 @@ public class AuthController {
                             .secure(isSecure)
                             .path("/")
                             .maxAge(Duration.ofMinutes(15)) // Access token lifespan
+                            .sameSite("None")
+                            .build();
+
+                    ResponseCookie refreshCookie = ResponseCookie.from("refreshtoken", jwt.getRefreshToken())
+                            .httpOnly(true)
+                            .secure(isSecure)
+                            .path("/auth/refresh") // Only sent to the refresh endpoint
+                            .maxAge(Duration.ofDays(7))
+                            .sameSite("None")//.sameSite("Strict")
                             .build();
 
                     // Return refresh token in the response body to store in client-side cookie
-                    JwtAccessToken jwtAccessToken = new JwtAccessToken(jwt.getRefreshToken(), jwt.getToken(),
-                            jwt.getSub(), jwt.getIat(), jwt.getJti(), jwt.getExp(), jwt.getRole());
+                    JwtAccessToken jwtAccessToken = new JwtAccessToken();
+                    jwtAccessToken.setSub(jwt.getSub());
+                    jwtAccessToken.setRole(jwt.getRole());
 
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, tokenCookie.toString())
-                            .body(jwtAccessToken); // Include refresh-token in response
+                            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                            .body(jwtAccessToken); // has only sub and role
                 })
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new JwtAccessToken()));
@@ -87,6 +100,12 @@ public class AuthController {
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new JwtAccessToken());
+    }
+
+    @GetMapping("/check")
+    public boolean checkAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.isAuthenticated();
     }
 
     @PostMapping("/logout")
