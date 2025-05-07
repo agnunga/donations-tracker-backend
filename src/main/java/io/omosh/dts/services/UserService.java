@@ -1,7 +1,10 @@
 package io.omosh.dts.services;
+
+import io.omosh.dts.dtos.CreateUserDTO;
 import io.omosh.dts.dtos.UserDTO;
 import io.omosh.dts.models.User;
 import io.omosh.dts.repositories.UserRepository;
+import kotlin.collections.ArrayDeque;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,14 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<UserDTO> getAllUsersDTOS() {
+        List<UserDTO> userDTOS = new ArrayDeque<>();
+        for (User user : userRepository.findAll()) {
+            userDTOS.add(new UserDTO(user));
+        }
+        return userDTOS;
+    }
+
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
@@ -35,18 +46,18 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public User createUser(UserDTO userDTO) {
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
+    public User createUser(CreateUserDTO createUserDTO) {
+        if (userRepository.existsByUsername(createUserDTO.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
 
         User user = new User();
-        user.setUsername(userDTO.getUsername());
-        user.setFullname(userDTO.getFullname());
-        user.setStatus(userDTO.getStatus());
-        user.setRole(userDTO.getRole());
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword())); // Encrypt password
-        user.setEmail(userDTO.getEmail());
+        user.setUsername(createUserDTO.getUsername());
+        user.setFullname(createUserDTO.getFullname());
+        user.setStatus(createUserDTO.getStatus());
+        user.setRole(createUserDTO.getRole());
+        user.setPassword(passwordEncoder.encode(createUserDTO.getPassword())); // Encrypt password
+        user.setEmail(createUserDTO.getEmail());
 
         return userRepository.save(user);
     }

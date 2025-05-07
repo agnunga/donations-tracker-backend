@@ -6,17 +6,22 @@ import io.omosh.dts.services.AuthService;
 import io.omosh.dts.utils.HelperUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -103,13 +108,72 @@ public class AuthController {
     }
 
     @GetMapping("/check")
-    public boolean checkAuthentication() {
+    public ResponseEntity<Boolean> checkAuthentication() {
+        logger.info("checkAuthentication:::");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated();
+
+        // Check if the user is authenticated (and not anonymous)
+        boolean isAuthenticated = authentication != null &&
+                authentication.isAuthenticated() &&
+                !(authentication instanceof AnonymousAuthenticationToken);
+
+        logger.info("checkAuthentication::: isAuthenticated ::: {} ", isAuthenticated);
+
+        // Return the status with appropriate HTTP status codes
+        if (isAuthenticated) {
+            return ResponseEntity.ok(true); // 200 OK with true
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false); // 401 Unauthorized with false
+        }
     }
 
+
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader(value = "Refresh-Token", required = false) String headerToken, @CookieValue(value = "refreshToken", required = false) String cookieToken) {
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request, HttpServletResponse response) {
+        logger.info("logout triggered");
+
+        boolean isSecure = !request.getServerName().equals("localhost");
+
+        // Invalidate session if it exists
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        // Expire the 'token' cookie
+        ResponseCookie tokenCookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(isSecure)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        // Expire the 'refreshtoken' cookie
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshtoken", "")
+                .httpOnly(true)
+                .secure(isSecure)
+                .path("/auth/refresh")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        // Clear security context
+        SecurityContextHolder.clearContext();
+
+        // Response body
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("success", true);
+        responseBody.put("message", "Logged out successfully");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, tokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(responseBody);
+    }
+
+    @PostMapping("/logout2")
+    public ResponseEntity<Void> logout2(@RequestHeader(value = "Refresh-Token", required = false) String headerToken, @CookieValue(value = "refreshToken", required = false) String cookieToken) {
         logger.info("just arrived, logout ::: ");
         String refreshToken = headerToken != null ? headerToken : cookieToken;
 

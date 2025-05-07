@@ -77,7 +77,7 @@ public class DarajaApiServiceImpl implements DarajaApiService {
 
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (response.body() == null) {
-                logger.error("Response body is null while retrieving access token");
+                logger.error("UserDTO body is null while retrieving access token");
                 return Optional.empty();
             }
 
@@ -276,11 +276,11 @@ public class DarajaApiServiceImpl implements DarajaApiService {
                 String responseBody = response.body().string();
 
                 if (!response.isSuccessful()) {
-                    logger.error("callPost Error Response: {}", responseBody);
+                    logger.error("callPost Error UserDTO: {}", responseBody);
                     throw new RuntimeException("Error from service: " + responseBody);
                 }
 
-                logger.info("callPost Success Response: {}", responseBody);
+                logger.info("callPost Success UserDTO: {}", responseBody);
                 return objectMapper.readValue(responseBody, responseType);
             }
 

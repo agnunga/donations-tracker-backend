@@ -1,5 +1,6 @@
 package io.omosh.dts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.omosh.dts.models.enums.Role;
 import io.omosh.dts.models.enums.Status;
 import jakarta.persistence.*;

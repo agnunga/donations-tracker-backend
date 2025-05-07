@@ -1,13 +1,12 @@
 package io.omosh.dts.controllers;
 
-import io.omosh.dts.config.JwtAuthenticationFilter;
+import io.omosh.dts.dtos.CreateUserDTO;
 import io.omosh.dts.dtos.UserDTO;
 import io.omosh.dts.models.User;
 import io.omosh.dts.services.UserService;
 import io.omosh.dts.utils.HelperUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,19 +27,19 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<User> createUser(@RequestBody CreateUserDTO createUserDTO) {
         logger.info("Users PostMapping triggered token ::: {}", "createUser");
-        return ResponseEntity.ok(userService.createUser(userDTO));
+        return ResponseEntity.ok(userService.createUser(createUserDTO));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
         logger.info("Users GetMapping triggered");
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         logger.info("User authenticated with username: {}", authentication.getName());
 
-        List<User> users = userService.getAllUsers();
+        List<UserDTO> users = userService.getAllUsersDTOS();
         logger.info("Users fetched: {}", HelperUtil.toJson(users));
 
         return ResponseEntity.ok(users);
