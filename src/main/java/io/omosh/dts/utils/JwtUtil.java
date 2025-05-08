@@ -40,7 +40,7 @@ public class JwtUtil {
     /**
      * Checks if the token is expired.
      */
-    private static boolean isTokenExpired(String token) {
+    public static boolean isTokenExpired(String token) {
         return extractClaims(token)
                 .map(claims -> claims.getExpiration().before(new Date()))
                 .orElse(true);
@@ -59,21 +59,23 @@ public class JwtUtil {
         long iat = System.currentTimeMillis();
         long exp = System.currentTimeMillis() + TOKEN_EXPIRATION_TIME_MS * 1000;
 
+
+        // Generate refresh token
+        String refreshToken = UUID.randomUUID().toString();
+        String jti = UUID.randomUUID().toString();
         // Generate access token
         String accessToken = Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date(iat))
                 .expiration(new Date(exp))
                 .claim("role", user.getRole().name())
-                .claim("jti", UUID.randomUUID().toString())
+                .claim("jti",jti)
                 .signWith(SIGNING_KEY)
                 .compact();
 
-        // Generate refresh token
-        String refreshToken = UUID.randomUUID().toString();
 
         // Return both tokens in the response DTO
-        return new JwtAccessToken(refreshToken, accessToken, user.getUsername(), String.valueOf(iat), UUID.randomUUID().toString(), String.valueOf(exp), user.getRole().name());
+        return new JwtAccessToken(refreshToken, accessToken, user.getUsername(), String.valueOf(iat), jti, String.valueOf(exp), user.getRole().name());
     }
 
 }

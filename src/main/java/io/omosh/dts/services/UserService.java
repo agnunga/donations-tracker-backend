@@ -28,7 +28,7 @@ public class UserService {
     public List<UserDTO> getAllUsersDTOS() {
         List<UserDTO> userDTOS = new ArrayDeque<>();
         for (User user : userRepository.findAll()) {
-            userDTOS.add(new UserDTO(user));
+            userDTOS.add(UserDTO.from(user));
         }
         return userDTOS;
     }

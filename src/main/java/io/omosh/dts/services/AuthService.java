@@ -2,7 +2,9 @@ package io.omosh.dts.services;
 
 import io.omosh.dts.dtos.JwtAccessToken;
 import io.omosh.dts.dtos.LoginRequest;
+import io.omosh.dts.dtos.UserDTO;
 import io.omosh.dts.models.RefreshTokenRecord;
+import io.omosh.dts.models.User;
 import io.omosh.dts.repositories.RefreshTokenRepository;
 import io.omosh.dts.utils.JwtUtil;
 import io.omosh.dts.repositories.UserRepository;
@@ -30,9 +32,14 @@ public class AuthService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
+
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public Optional<JwtAccessToken> login(HttpServletRequest request, LoginRequest loginRequest) {
-        return userRepository.findByUsername(loginRequest.getUsername())
-                .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+        return findUserByUsername(loginRequest.username())
+                .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
                 .map(user -> saveRefreshTokenRecord(request, JwtUtil.generateToken(user)));
     }
 
@@ -44,7 +51,6 @@ public class AuthService {
                 .orElse(false)).orElse(false);
 
     }
-
 
     public JwtAccessToken saveRefreshTokenRecord(HttpServletRequest request, JwtAccessToken jwtAccessToken) {
         // Create the refresh token record
@@ -70,31 +76,16 @@ public class AuthService {
         return jwtAccessToken;
     }
 
-    public void revokeRefreshToken(String refreshToken) {
-        refreshTokenRepository.findByRefreshToken(refreshToken)
+    public Optional<RefreshTokenRecord> revokeRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByRefreshToken(refreshToken)
                 .map(record -> {
                     record.revoke(); // mark it as revoked
                     return refreshTokenRepository.save(record); // save the updated record
                 });
     }
 
-    public Optional<JwtAccessToken> refreshToken(String refreshToken) {
-        logger.info("refreshToken ::: {}", refreshToken);
-
-        return refreshTokenRepository.findByRefreshToken(refreshToken)
-                .filter(record -> !record.isExpired() && !record.isRevoked())
-                .flatMap(record ->
-                        userRepository.findByUsername(record.getUsername())
-                                .map(user -> {
-                                    JwtAccessToken newAccessToken = JwtUtil.generateToken(user);
-                                    newAccessToken.setRefreshToken(refreshToken); // reuse refresh token
-                                    return newAccessToken;
-                                })
-                );
-    }
-
-    public void logout(String refreshToken) {
-        revokeRefreshToken(refreshToken);
+    public Optional<RefreshTokenRecord> findByRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByRefreshTokenAndRevokedFalseAndExpirationAfter(refreshToken, LocalDateTime.now());
     }
 
 }
