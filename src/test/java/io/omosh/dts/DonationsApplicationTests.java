@@ -14,7 +14,6 @@ public class DonationsApplicationTests {
 	@Autowired
 	private DarajaApiServiceImpl darajaApiServiceImpl;
 
-
 	@Test
 	void testPrintConfig() {
 		darajaApiServiceImpl.printConfig();

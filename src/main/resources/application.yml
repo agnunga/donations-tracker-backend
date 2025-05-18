@@ -1,9 +1,11 @@
 spring:
   application:
     name: donations
+
   docker:
     compose:
       enabled: false
+
   # MySQL Database Configuration
   datasource:
     url: jdbc:mysql://localhost:3306/donations?useSSL=false&serverTimezone=UTC
@@ -14,14 +16,24 @@ spring:
   # Hibernate (JPA) Configuration
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
-    hibernate.ddl-auto: update
+    hibernate:
+      ddl-auto: update
     show-sql: true
+
+  task:
+    execution:
+      thread-name-prefix: task1
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
 
 server:
   port: 9090
   error:
     include-message: always
     include-binding-errors: always
+
 management:
   endpoints:
     enabled-by-default: true
@@ -36,58 +48,62 @@ daraja:
     consumer-key: ${DARAJA_CONSUMER_KEY}
     consumer-secret: ${DARAJA_CONSUMER_SECRET}
     security-credential: ${DARAJA_SECURITY_CREDENTIAL}
-    auth-url: https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
-    base-url: https://e41a-2c0f-fe38-2326-8c7e-b5d5-f8f4-e4ff-c0b0.ngrok-free.app
-    b2c-url: https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest
-    b2c-initiator-name: ${DARAJA_B2C_INITIATOR_NAME}
-    b2c-initiator-password: ${DARAJA_B2C_INITIATOR_PASSWORD}
+
     b2c-party-a: 600999
     c2b-short-code: 600983
-    c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
-    c2b-register-url-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
+    b2c-initiator-name: ${DARAJA_B2C_INITIATOR_NAME}
+    b2c-initiator-password: ${DARAJA_B2C_INITIATOR_PASSWORD}
+
+    base-url: https://bd74-105-160-76-53.ngrok-free.app
+    auth-url: https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
+
+    b2c-url: https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest
     b2c-initiate-url: ${daraja.configs.base-url}/momo/b2c-initiate
     b2c-callback-url: ${daraja.configs.base-url}/momo/b2c-callback
     b2c-result-url: ${daraja.configs.base-url}/momo/b2c-result
-    c2b-confirmation-url: ${daraja.configs.base-url}/momo/c2b-confirmation
+
+    c2b-simulate-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
     c2b-validation-url: ${daraja.configs.base-url}/momo/c2b-validation
+    c2b-register-url-url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
+    c2b-confirmation-url: ${daraja.configs.base-url}/momo/c2b-confirmation
     c2b-register-call-url: ${daraja.configs.base-url}/momo/c2b-register-call
 
-    query-transaction-url: https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query
-    query-transaction-queue-url: ${daraja.configs.base-url}/momo/query-transaction-queue
-    query-transaction-result: ${daraja.configs.base-url}/momo/query-transaction-result
-    query-transaction-call-url: ${daraja.configs.base-url}/momo/query-transaction-call
+    query-txn-url: https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query
+    query-txn-call-url: ${daraja.configs.base-url}/momo/query-transaction-call
+    query-txn-queue-url: ${daraja.configs.base-url}/momo/query-transaction-queue
+    query-txn-result-url: ${daraja.configs.base-url}/momo/query-transaction-result
 
     query-bal-url: https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query
+    query-bal-call-url: ${daraja.configs.base-url}/momo/query-bal-call
     query-bal-queue-url: ${daraja.configs.base-url}/momo/query-bal-queue
     query-bal-result-url: ${daraja.configs.base-url}/momo/query-bal-result
-    query-bal-call-url: ${daraja.configs.base-url}/momo/query-bal-call
 
     reversal-url: https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request
+    reversal-call-url: ${daraja.configs.base-url}/momo/reversal-call
     reversal-queue-url: ${daraja.configs.base-url}/momo/reversal-queue
     reversal-result-url: ${daraja.configs.base-url}/momo/reversal-result
-    reversal-call-url: ${daraja.configs.base-url}/momo/reversal-call
 
     remit-tax-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/remittax
+    remit-tax-call-url: ${daraja.configs.base-url}/momo/remit-tax-call
     remit-tax-queue-url: ${daraja.configs.base-url}/momo/remit-tax-queue
     remit-tax-result-url: ${daraja.configs.base-url}/momo/remit-tax-result
-    remit-tax-call-url: ${daraja.configs.base-url}/momo/remit-tax-call
 
     # Business Pay Bill
     payment-request-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest
+    payment-request-call-url: ${daraja.configs.base-url}/momo/payment-request-call
     payment-request-queue-url: ${daraja.configs.base-url}/momo/payment-request-queue
     payment-request-result-url: ${daraja.configs.base-url}/momo/payment-request-result
-    payment-request-call-url: ${daraja.configs.base-url}/momo/payment-request-call
 
     #Business Buy Goods
     payment-buy-goods-url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest
+    payment-buy-goods-call-url: ${daraja.configs.base-url}/momo/payment-buy-goods-call
     payment-buy-goods-queue-url: ${daraja.configs.base-url}/momo/payment-buy-goods-queue
     payment-buy-goods-result-url: ${daraja.configs.base-url}/momo/payment-buy-goods-result
-    payment-buy-goods-call-url: ${daraja.configs.base-url}/momo/payment-buy-goods-call
 
     #M-Pesa Express Simulate
     express-url: https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest
-    express-result-url: ${daraja.configs.base-url}/momo/express-result
     express-call-url: ${daraja.configs.base-url}/momo/express-call
+    express-result-url: ${daraja.configs.base-url}/momo/express-result
 
     #M-Pesa Express Query
     express-query-url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query

@@ -25,7 +25,6 @@ public class DriverTest {
         double x = f(a,b*1.0);
     }
 
-
     public static double f(double[] a, double b){
         a[0] = a[0]*b;
         a[1] = a[1]*b;

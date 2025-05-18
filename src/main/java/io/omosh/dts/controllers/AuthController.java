@@ -86,15 +86,13 @@ public class AuthController {
 
     @GetMapping("/check-session")
     public ResponseEntity<Boolean> checkAuthentication() {
-        logger.info("checkAuthentication:::");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         // Check if the user is authenticated (and not anonymous)
         boolean isAuthenticated = authentication != null &&
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
 
-        logger.info("checkAuthentication::: isAuthenticated ::: {} ", isAuthenticated);
+        logger.info("/check-session -> checkAuthentication -> isAuthenticated ::: {} ", isAuthenticated);
 
         // Return the status with appropriate HTTP status codes
         if (isAuthenticated) {
